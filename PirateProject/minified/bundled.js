@@ -9,7 +9,7 @@ var AliveClass = (function () {
     AliveClass.prototype.onBackgroundTick = function (time) {
         this.states.getValue(this.currentState).onBackgroundTick(time);
     };
-    AliveClass.prototype.onStart = function (handler) {
+    AliveClass.prototype.onStart = function (handler, disabledPermissions) {
         this.handler = handler;
         this.handler.getActionManager().move(0, this.handler.getConfigurationManager().getScreenHeight(), 200);
         this.handler.getActionManager().draw("activate.png", this.handler.getConfigurationManager().getMaximalResizeRatio(), false);
@@ -37,7 +37,7 @@ var AliveClass = (function () {
             this.currentState = PirateState.PASSIVE;
         }
     };
-    AliveClass.prototype.onActionReceived = function (actionName) {
+    AliveClass.prototype.onActionReceived = function (actionName, jsonedData) {
         this.handler.getActionManager().showMessage(actionName);
         this.states.getValue(this.currentState).onActionReceived(actionName);
     };
@@ -326,6 +326,12 @@ var AgentConstants = (function () {
 }());
 ;
 //# sourceMappingURL=AgentConstants.js.map
+var AliveSmsData = (function () {
+    function AliveSmsData() {
+    }
+    return AliveSmsData;
+}());
+//# sourceMappingURL=AliveSmsData.js.map
 //# sourceMappingURL=IAliveLatLng.js.map
 //# sourceMappingURL=IAliveLatLngBounds.js.map
 //# sourceMappingURL=IAliveLocation.js.map
@@ -3976,6 +3982,14 @@ var ViewType = (function () {
     return ViewType;
 }());
 //# sourceMappingURL=ViewType.js.map
+//# sourceMappingURL=IBaseMenuItem.js.map
+//# sourceMappingURL=IButtonMenuItem.js.map
+//# sourceMappingURL=ICheckBoxMenuItem.js.map
+//# sourceMappingURL=IMenuHeader.js.map
+//# sourceMappingURL=IPaintMenuItem.js.map
+//# sourceMappingURL=IPictureMenuItem.js.map
+//# sourceMappingURL=IProgressBarMenuItem.js.map
+//# sourceMappingURL=ITextBoxMenuItem.js.map
 //# sourceMappingURL=IAliveLatLng.js.map
 //# sourceMappingURL=IAliveLatLngBounds.js.map
 //# sourceMappingURL=IAliveLocation.js.map
@@ -4622,11 +4636,3 @@ var PlaceType = (function () {
     return PlaceType;
 }());
 //# sourceMappingURL=PlaceType.js.map
-//# sourceMappingURL=IBaseMenuItem.js.map
-//# sourceMappingURL=IButtonMenuItem.js.map
-//# sourceMappingURL=ICheckBoxMenuItem.js.map
-//# sourceMappingURL=IMenuHeader.js.map
-//# sourceMappingURL=IPaintMenuItem.js.map
-//# sourceMappingURL=IPictureMenuItem.js.map
-//# sourceMappingURL=IProgressBarMenuItem.js.map
-//# sourceMappingURL=ITextBoxMenuItem.js.map

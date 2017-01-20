@@ -18,7 +18,7 @@ class AliveClass implements IAliveAgent, IStateSwitchable {
         this.states.getValue(this.currentState).onBackgroundTick(time);
     }
 
-    onStart(handler: IManagersHandler): void {
+    onStart(handler: IManagersHandler, disabledPermissions: string[]): void {
         this.handler = handler;
         this.handler.getActionManager().move(0, this.handler.getConfigurationManager().getScreenHeight(), 200);
         this.handler.getActionManager().draw("activate.png", this.handler.getConfigurationManager().getMaximalResizeRatio(), false);

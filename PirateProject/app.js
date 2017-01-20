@@ -9,7 +9,7 @@ var AliveClass = (function () {
     AliveClass.prototype.onBackgroundTick = function (time) {
         this.states.getValue(this.currentState).onBackgroundTick(time);
     };
-    AliveClass.prototype.onStart = function (handler) {
+    AliveClass.prototype.onStart = function (handler, disabledPermissions) {
         this.handler = handler;
         this.handler.getActionManager().move(0, this.handler.getConfigurationManager().getScreenHeight(), 200);
         this.handler.getActionManager().draw("activate.png", this.handler.getConfigurationManager().getMaximalResizeRatio(), false);

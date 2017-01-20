@@ -37,7 +37,7 @@ var AliveClass = (function () {
             this.currentState = PirateState.PASSIVE;
         }
     };
-    AliveClass.prototype.onActionReceived = function (actionName) {
+    AliveClass.prototype.onActionReceived = function (actionName, jsonedData) {
         this.handler.getActionManager().showMessage(actionName);
         this.states.getValue(this.currentState).onActionReceived(actionName);
     };

@@ -31,6 +31,7 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <TypeScriptCompile Include="AliveClasses\AliveSmsData.ts" />
     <TypeScriptCompile Include="AliveClasses\Calendar\ICalendarEvent.ts" />
     <TypeScriptCompile Include="AliveClasses\ICurrentTime.ts" />
     <TypeScriptCompile Include="AliveClasses\IVoice.ts" />

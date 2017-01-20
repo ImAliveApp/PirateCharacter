@@ -51,7 +51,7 @@ class AliveClass implements IAliveAgent, IStateSwitchable {
         }
     }
 
-    onActionReceived(actionName: string): void {
+    onActionReceived(actionName: string, jsonedData: string): void {
         this.handler.getActionManager().showMessage(actionName);
         this.states.getValue(this.currentState).onActionReceived(actionName);
     }

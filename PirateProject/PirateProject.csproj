@@ -73,11 +73,8 @@
     <TypeScriptCompile Include="AliveInterfaces\ISpeechToTextManager.ts" />
     <TypeScriptCompile Include="AliveInterfaces\ITextToSpeechManager.ts" />
     <TypeScriptCompile Include="app.ts" />
-    <TypeScriptCompile Include="Pirate\ActiveState.ts" />
     <TypeScriptCompile Include="Pirate\PirateState.ts" />
     <TypeScriptCompile Include="Pirate\IStateSwitchable.ts" />
-    <TypeScriptCompile Include="Pirate\PassiveState.ts" />
-    <TypeScriptCompile Include="Pirate\SleepingState.ts" />
     <TypeScriptCompile Include="Pirate\TimerTriggerSystem.ts" />
     <TypeScriptCompile Include="Scripts\collections.d.ts" />
     <TypeScriptCompile Include="Scripts\collections.ts" />

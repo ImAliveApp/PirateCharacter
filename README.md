@@ -15,10 +15,9 @@ In order to use this template, do the following steps:
 ### The code:
 Most of the action responds work is done in the "onActionReceived" method:
 ```
-
     onActionReceived(actionName: string, jsonedData: string): void {
-        this.actionManager.showMessage(actionName + " received");
-        this.drawAndPlayRandomResourceByCategory(actionName);
+        this.handler.getActionManager().showMessage(actionName);
+        this.states.getValue(this.currentState).onActionReceived(actionName);
     }
 ```
 The character menu work is done in the "onMenuItemSelected" method:

@@ -1,4 +1,4 @@
-## Pirate Project:
+## Pirate Character:
 
 ### Main concept:
 This is an actual code of a Pirate character in the app, this character responds to phone actions (events), displaying and using [character menu](https://github.com/hay12396/ImAliveGuide/wiki/The-Character-Menu) for the best user interaction and it has an implementation of a mood-state machine (the character will behave differently depending on various of variables)

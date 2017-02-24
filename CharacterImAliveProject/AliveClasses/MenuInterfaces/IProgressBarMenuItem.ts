@@ -1,3 +1,0 @@
-﻿interface IProgressBarMenuItem extends IPaintMenuItem {
-
-}

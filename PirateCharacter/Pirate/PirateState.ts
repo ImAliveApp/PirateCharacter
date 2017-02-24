@@ -361,7 +361,7 @@ class SleepingState extends PirateState {
     }
 
     normalTick(time: number): void {
-        if (!this.configurationMananger.getIsSoundPlaying()) {
+        if (!this.configurationMananger.isSoundPlaying()) {
             this.normalEmote(time);
         }
 

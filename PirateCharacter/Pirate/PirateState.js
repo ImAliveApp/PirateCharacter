@@ -328,7 +328,7 @@ var SleepingState = (function (_super) {
         }
     };
     SleepingState.prototype.normalTick = function (time) {
-        if (!this.configurationMananger.getIsSoundPlaying()) {
+        if (!this.configurationMananger.isSoundPlaying()) {
             this.normalEmote(time);
         }
         if (this.shouldEventHappen(0.25)) {

@@ -37,9 +37,9 @@ var AliveClass = (function () {
             this.currentState = PirateState.PASSIVE;
         }
     };
-    AliveClass.prototype.onActionReceived = function (actionName, jsonedData) {
-        this.handler.getActionManager().showMessage(actionName);
-        this.states.getValue(this.currentState).onActionReceived(actionName);
+    AliveClass.prototype.onPhoneEventOccurred = function (eventName, jsonedData) {
+        this.handler.getActionManager().showMessage(eventName);
+        this.states.getValue(this.currentState).onPhoneEventOccurred(eventName);
     };
     AliveClass.prototype.onMove = function (oldX, oldY, newX, newY) {
         this.states.getValue(this.currentState).onMove(oldX, oldY, newX, newY);

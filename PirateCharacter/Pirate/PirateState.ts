@@ -40,7 +40,7 @@
 
     abstract onSpeechRecognitionResults(results: string): void;
 
-    abstract onActionReceived(categoryName: string): void;
+    abstract onPhoneEventOccurred(eventName: string): void;
 
     abstract onMove(oldX: number, oldY: number, newX: number, newY: number): void;
 
@@ -253,10 +253,10 @@ class PassiveState extends PirateState {
         this.onTick(time);
     }
 
-    onActionReceived(categoryName: string): void {
-        if (categoryName == AgentConstants.NEW_OUTGOING_CALL ||
-            categoryName == AgentConstants.INCOMING_CALL ||
-            categoryName == AgentConstants.SMS_RECEIVED) {
+    onPhoneEventOccurred(eventName: string): void {
+        if (eventName == AgentConstants.NEW_OUTGOING_CALL ||
+            eventName == AgentConstants.INCOMING_CALL ||
+            eventName == AgentConstants.SMS_RECEIVED) {
             this.timerTrigger.set("fun", PassiveState.HAVING_FUN_TIME);
             this.switchContext.switchTo(PirateState.ACTIVE);
         }
@@ -415,10 +415,10 @@ class SleepingState extends PirateState {
         this.onTick(time);
     }
 
-    onActionReceived(categoryName: string): void {
-        if (categoryName == AgentConstants.NEW_OUTGOING_CALL ||
-            categoryName == AgentConstants.INCOMING_CALL ||
-            categoryName == AgentConstants.SMS_RECEIVED) {
+    onPhoneEventOccurred(eventName: string): void {
+        if (eventName == AgentConstants.NEW_OUTGOING_CALL ||
+            eventName == AgentConstants.INCOMING_CALL ||
+            eventName == AgentConstants.SMS_RECEIVED) {
             this.timerTrigger.set("angry", SleepingState.ANNOYED_TO_NORMAL_TIME);
             this.currentState = SleepingSubstate.Angry;
         }
@@ -520,7 +520,7 @@ class ActiveState extends PirateState {
         super.onStart(handler);
     }
 
-    onActionReceived(categoryName: string): void {
+    onPhoneEventOccurred(eventName: string): void {
 
     }
 

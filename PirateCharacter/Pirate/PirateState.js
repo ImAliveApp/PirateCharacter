@@ -232,10 +232,10 @@ var PassiveState = (function (_super) {
     PassiveState.prototype.onBackgroundTick = function (time) {
         this.onTick(time);
     };
-    PassiveState.prototype.onActionReceived = function (categoryName) {
-        if (categoryName == AgentConstants.NEW_OUTGOING_CALL ||
-            categoryName == AgentConstants.INCOMING_CALL ||
-            categoryName == AgentConstants.SMS_RECEIVED) {
+    PassiveState.prototype.onPhoneEventOccurred = function (eventName) {
+        if (eventName == AgentConstants.NEW_OUTGOING_CALL ||
+            eventName == AgentConstants.INCOMING_CALL ||
+            eventName == AgentConstants.SMS_RECEIVED) {
             this.timerTrigger.set("fun", PassiveState.HAVING_FUN_TIME);
             this.switchContext.switchTo(PirateState.ACTIVE);
         }
@@ -371,10 +371,10 @@ var SleepingState = (function (_super) {
     SleepingState.prototype.onBackgroundTick = function (time) {
         this.onTick(time);
     };
-    SleepingState.prototype.onActionReceived = function (categoryName) {
-        if (categoryName == AgentConstants.NEW_OUTGOING_CALL ||
-            categoryName == AgentConstants.INCOMING_CALL ||
-            categoryName == AgentConstants.SMS_RECEIVED) {
+    SleepingState.prototype.onPhoneEventOccurred = function (eventName) {
+        if (eventName == AgentConstants.NEW_OUTGOING_CALL ||
+            eventName == AgentConstants.INCOMING_CALL ||
+            eventName == AgentConstants.SMS_RECEIVED) {
             this.timerTrigger.set("angry", SleepingState.ANNOYED_TO_NORMAL_TIME);
             this.currentState = SleepingSubstate.Angry;
         }
@@ -444,7 +444,7 @@ var ActiveState = (function (_super) {
     ActiveState.prototype.onStart = function (handler) {
         _super.prototype.onStart.call(this, handler);
     };
-    ActiveState.prototype.onActionReceived = function (categoryName) {
+    ActiveState.prototype.onPhoneEventOccurred = function (eventName) {
     };
     ActiveState.prototype.onMove = function (oldX, oldY, newX, newY) {
     };

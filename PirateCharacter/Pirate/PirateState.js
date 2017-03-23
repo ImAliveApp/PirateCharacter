@@ -7,6 +7,12 @@ var PirateState = (function () {
     function PirateState(switchContext) {
         this.switchContext = switchContext;
     }
+    Object.defineProperty(PirateState, "WALK_TIME", {
+        get: function () { return 1000; },
+        enumerable: true,
+        configurable: true
+    });
+    ;
     Object.defineProperty(PirateState, "SLEEPING", {
         get: function () { return "sleeping"; },
         enumerable: true,
@@ -27,6 +33,7 @@ var PirateState = (function () {
     ;
     PirateState.prototype.onStart = function (handler) {
         var _this = this;
+        this.walking = false;
         this.actionManager = handler.getActionManager();
         this.resourceManager = handler.getResourceManager();
         this.databaseManager = handler.getDatabaseManager();
@@ -37,6 +44,25 @@ var PirateState = (function () {
         this.awarenessManager = handler.getAwarenessManager();
         this.resourceManagerHelper = new ResourceManagerHelper(this.resourceManager);
         this.timerTrigger = new TimerTriggerSystem(function () { return _this.configurationMananger.getCurrentTime().currentTimeMillis; });
+    };
+    PirateState.prototype.walkRandomally = function () {
+        var screenWidth = this.configurationMananger.getScreenWidth();
+        var currentX = this.characterManager.getCurrentCharacterXPosition();
+        var distanceToMove = Math.abs(currentX - screenWidth);
+        var category = AgentConstants.ON_FALLING_RIGHT;
+        this.walking = true;
+        if (this.shouldEventHappen(50) && distanceToMove > screenWidth / 4) {
+            this.actionManager.move(distanceToMove / 3, 0, PirateState.WALK_TIME);
+        }
+        else {
+            this.actionManager.move(-distanceToMove / 3, 0, PirateState.WALK_TIME);
+            category = AgentConstants.ON_FALLING_LEFT;
+        }
+        var resToDraw = this.resourceManagerHelper.chooseRandomImage(category);
+        this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
+        var soundToPlay = this.resourceManagerHelper.chooseRandomSound(category);
+        if (!this.configurationMananger.isSoundPlaying())
+            this.actionManager.playSound(soundToPlay);
     };
     PirateState.prototype.shouldEventHappen = function (chance) {
         return Math.random() < chance;
@@ -52,6 +78,7 @@ var PassiveSubstate;
     PassiveSubstate[PassiveSubstate["DoingSomethingStupid"] = 4] = "DoingSomethingStupid";
     PassiveSubstate[PassiveSubstate["RespondsToEvents"] = 5] = "RespondsToEvents";
     PassiveSubstate[PassiveSubstate["AskingForInteraction"] = 6] = "AskingForInteraction";
+    PassiveSubstate[PassiveSubstate["WalkingAround"] = 7] = "WalkingAround";
 })(PassiveSubstate || (PassiveSubstate = {}));
 var PassiveState = (function (_super) {
     __extends(PassiveState, _super);
@@ -129,29 +156,43 @@ var PassiveState = (function (_super) {
             case PassiveSubstate.AskingForInteraction:
                 this.askingForInteractionTick(time);
                 break;
+            case PassiveSubstate.WalkingAround:
+                this.walkingAroundTick(time);
+                break;
         }
     };
     PassiveState.prototype.lookingAroundTick = function (time) {
         if (this.shouldEventHappen(PassiveState.LOOKING_AROUND_CHANGE)) {
             if (this.shouldEventHappen(PassiveState.CHANGE_PASSIVE_STATE)) {
+                this.actionManager.stopSound();
                 this.currentState = PassiveSubstate.DoingSomethingStupid;
                 this.timerTrigger.set("doingSomethingStupid", PassiveState.DOING_SOMETHING_STUPID_TIME);
             }
             else if (this.shouldEventHappen(PassiveState.CHANGE_PASSIVE_STATE)) {
+                this.actionManager.stopSound();
                 this.currentState = PassiveSubstate.Eating;
                 this.timerTrigger.set("eating", PassiveState.EATING_TIME);
             }
             else if (this.shouldEventHappen(PassiveState.CHANGE_PASSIVE_STATE)) {
+                this.actionManager.stopSound();
                 this.currentState = PassiveSubstate.Reading;
                 this.timerTrigger.set("reading", PassiveState.READING_TIME);
             }
             else if (this.shouldEventHappen(PassiveState.CHANGE_PASSIVE_STATE)) {
+                this.actionManager.stopSound();
                 this.currentState = PassiveSubstate.Drinking;
                 this.timerTrigger.set("drinking", PassiveState.EATING_TIME);
             }
             else if (this.shouldEventHappen(PassiveState.CHANGE_PASSIVE_STATE)) {
+                this.actionManager.stopSound();
                 this.currentState = PassiveSubstate.AskingForInteraction;
                 this.timerTrigger.set("askingForInteraction", PassiveState.ASKING_FOR_INTERACTION_TIME);
+            }
+            else {
+                this.actionManager.stopSound();
+                this.walkRandomally();
+                this.currentState = PassiveSubstate.WalkingAround;
+                this.timerTrigger.set("walkingAround", PirateState.WALK_TIME);
             }
         }
         this.lookingAroundEmote(time);
@@ -160,10 +201,12 @@ var PassiveState = (function (_super) {
         var resToDraw = this.resourceManagerHelper.chooseRandomImage("lookingAround");
         this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
         var soundToPlay = this.resourceManagerHelper.chooseRandomSound("lookingAround");
-        this.actionManager.playSound(soundToPlay);
+        if (!this.configurationMananger.isSoundPlaying())
+            this.actionManager.playSound(soundToPlay);
     };
     PassiveState.prototype.eatingTick = function (time) {
         if (!this.timerTrigger.isOnGoing("eating")) {
+            this.actionManager.stopSound();
             this.currentState = PassiveSubstate.LookingAround;
             return;
         }
@@ -173,10 +216,12 @@ var PassiveState = (function (_super) {
         var resToDraw = this.resourceManagerHelper.chooseRandomImage("eating");
         this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
         var soundToPlay = this.resourceManagerHelper.chooseRandomSound("eating");
-        this.actionManager.playSound(soundToPlay);
+        if (!this.configurationMananger.isSoundPlaying())
+            this.actionManager.playSound(soundToPlay);
     };
     PassiveState.prototype.drinkingTick = function (time) {
         if (!this.timerTrigger.isOnGoing("drinking")) {
+            this.actionManager.stopSound();
             this.currentState = PassiveSubstate.LookingAround;
             return;
         }
@@ -186,10 +231,12 @@ var PassiveState = (function (_super) {
         var resToDraw = this.resourceManagerHelper.chooseRandomImage("drinking");
         this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
         var soundToPlay = this.resourceManagerHelper.chooseRandomSound("drinking");
-        this.actionManager.playSound(soundToPlay);
+        if (!this.configurationMananger.isSoundPlaying())
+            this.actionManager.playSound(soundToPlay);
     };
     PassiveState.prototype.readingTick = function (time) {
         if (!this.timerTrigger.isOnGoing("reading")) {
+            this.actionManager.stopSound();
             this.currentState = PassiveSubstate.LookingAround;
             return;
         }
@@ -199,10 +246,12 @@ var PassiveState = (function (_super) {
         var resToDraw = this.resourceManagerHelper.chooseRandomImage("reading");
         this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
         var soundToPlay = this.resourceManagerHelper.chooseRandomSound("reading");
-        this.actionManager.playSound(soundToPlay);
+        if (!this.configurationMananger.isSoundPlaying())
+            this.actionManager.playSound(soundToPlay);
     };
     PassiveState.prototype.askingForInteractionTick = function (time) {
         if (!this.timerTrigger.isOnGoing("askingForInteraction")) {
+            this.actionManager.stopSound();
             this.currentState = PassiveSubstate.LookingAround;
             return;
         }
@@ -212,10 +261,12 @@ var PassiveState = (function (_super) {
         var resToDraw = this.resourceManagerHelper.chooseRandomImage("askingForInteraction");
         this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
         var soundToPlay = this.resourceManagerHelper.chooseRandomSound("askingForInteraction");
-        this.actionManager.playSound(soundToPlay);
+        if (!this.configurationMananger.isSoundPlaying())
+            this.actionManager.playSound(soundToPlay);
     };
     PassiveState.prototype.doingSomethingStupidTick = function (time) {
         if (!this.timerTrigger.isOnGoing("doingSomethingStupid")) {
+            this.actionManager.stopSound();
             this.currentState = PassiveSubstate.LookingAround;
             return;
         }
@@ -225,9 +276,18 @@ var PassiveState = (function (_super) {
         var resToDraw = this.resourceManagerHelper.chooseRandomImage("doingSomethingStupid");
         this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
         var soundToPlay = this.resourceManagerHelper.chooseRandomSound("doingSomethingStupid");
-        this.actionManager.playSound(soundToPlay);
+        if (!this.configurationMananger.isSoundPlaying())
+            this.actionManager.playSound(soundToPlay);
     };
     PassiveState.prototype.respondsToEventsTick = function (time) {
+    };
+    PassiveState.prototype.walkingAroundTick = function (time) {
+        if (!this.timerTrigger.isOnGoing("walkingAround")) {
+            this.actionManager.stopSound();
+            this.walking = false;
+            this.currentState = PassiveSubstate.LookingAround;
+            return;
+        }
     };
     PassiveState.prototype.onBackgroundTick = function (time) {
         this.onTick(time);
@@ -237,6 +297,7 @@ var PassiveState = (function (_super) {
             eventName == AgentConstants.INCOMING_CALL ||
             eventName == AgentConstants.SMS_RECEIVED) {
             this.timerTrigger.set("fun", PassiveState.HAVING_FUN_TIME);
+            this.actionManager.stopSound();
             this.switchContext.switchTo(PirateState.ACTIVE);
         }
     };
@@ -262,7 +323,14 @@ var PassiveState = (function (_super) {
     PassiveState.prototype.onWeatherReceived = function (weather) {
     };
     PassiveState.prototype.onConfigureMenuItems = function (menuBuilder) { };
-    PassiveState.prototype.onSpeechRecognitionResults = function (results) { };
+    PassiveState.prototype.onSpeechRecognitionResults = function (results) {
+        if (results.indexOf("quite") != -1 || results.indexOf("shut") != -1
+            || results.indexOf("stupid") != -1 || results.indexOf("fuck") != -1) {
+            this.actionManager.stopSound();
+            this.currentState = PassiveSubstate.AskingForInteraction;
+            this.timerTrigger.set("askingForInteraction", PassiveState.ASKING_FOR_INTERACTION_TIME);
+        }
+    };
     PassiveState.prototype.onPlacesReceived = function (places) { };
     return PassiveState;
 }(PirateState));
@@ -313,6 +381,7 @@ var SleepingState = (function (_super) {
         var now = this.configurationMananger.getCurrentTime();
         if (now.Hour < 22 && now.Hour > 8) {
             this.switchContext.switchTo(PirateState.PASSIVE);
+            this.actionManager.stopSound();
             return;
         }
         switch (this.currentState) {
@@ -332,6 +401,7 @@ var SleepingState = (function (_super) {
             this.normalEmote(time);
         }
         if (this.shouldEventHappen(0.25)) {
+            this.actionManager.stopSound();
             this.timerTrigger.set("sleep_nap", SleepingState.SNORE_TO_NORMAL_TIME);
             this.currentState = SleepingSubstate.Nap;
         }
@@ -340,10 +410,12 @@ var SleepingState = (function (_super) {
         var resToDraw = this.resourceManagerHelper.chooseRandomImage("sleeping-normal");
         this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
         var soundToPlay = this.resourceManagerHelper.chooseRandomSound("sleeping-normal");
-        this.actionManager.playSound(soundToPlay);
+        if (!this.configurationMananger.isSoundPlaying())
+            this.actionManager.playSound(soundToPlay);
     };
     SleepingState.prototype.napTick = function (time) {
         if (!this.timerTrigger.isOnGoing("sleep_nap")) {
+            this.actionManager.stopSound();
             this.currentState = SleepingSubstate.Normal;
             return;
         }
@@ -353,10 +425,12 @@ var SleepingState = (function (_super) {
         var resToDraw = this.resourceManagerHelper.chooseRandomImage("sleeping-nap");
         this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
         var soundToPlay = this.resourceManagerHelper.chooseRandomSound("sleeping-nap");
-        this.actionManager.playSound(soundToPlay);
+        if (!this.configurationMananger.isSoundPlaying())
+            this.actionManager.playSound(soundToPlay);
     };
     SleepingState.prototype.angryTick = function (time) {
         if (!this.timerTrigger.isOnGoing("angry")) {
+            this.actionManager.stopSound();
             this.currentState = SleepingSubstate.Normal;
             return;
         }
@@ -366,7 +440,8 @@ var SleepingState = (function (_super) {
         var resToDraw = this.resourceManagerHelper.chooseRandomImage("angry");
         this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
         var soundToPlay = this.resourceManagerHelper.chooseRandomSound("angry");
-        this.actionManager.playSound(soundToPlay);
+        if (!this.configurationMananger.isSoundPlaying())
+            this.actionManager.playSound(soundToPlay);
     };
     SleepingState.prototype.onBackgroundTick = function (time) {
         this.onTick(time);
@@ -375,6 +450,7 @@ var SleepingState = (function (_super) {
         if (eventName == AgentConstants.NEW_OUTGOING_CALL ||
             eventName == AgentConstants.INCOMING_CALL ||
             eventName == AgentConstants.SMS_RECEIVED) {
+            this.actionManager.stopSound();
             this.timerTrigger.set("angry", SleepingState.ANNOYED_TO_NORMAL_TIME);
             this.currentState = SleepingSubstate.Angry;
         }
@@ -402,7 +478,11 @@ var SleepingState = (function (_super) {
     };
     SleepingState.prototype.onConfigureMenuItems = function (menuBuilder) {
     };
-    SleepingState.prototype.onSpeechRecognitionResults = function (results) { };
+    SleepingState.prototype.onSpeechRecognitionResults = function (results) {
+        this.actionManager.stopSound();
+        this.currentState = SleepingSubstate.Angry;
+        this.timerTrigger.set("angry", SleepingState.ANNOYED_TO_NORMAL_TIME);
+    };
     SleepingState.prototype.onPlacesReceived = function (places) { };
     return SleepingState;
 }(PirateState));
@@ -428,6 +508,7 @@ var ActiveState = (function (_super) {
     ActiveState.prototype.onFunTick = function (time) {
         if (!this.timerTrigger.isOnGoing("fun")) {
             this.switchContext.switchTo(PirateState.PASSIVE);
+            this.actionManager.stopSound();
             return;
         }
         this.funEmote(time);
@@ -436,7 +517,8 @@ var ActiveState = (function (_super) {
         var resToDraw = this.resourceManagerHelper.chooseRandomImage("fun");
         this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
         var soundToPlay = this.resourceManagerHelper.chooseRandomSound("fun");
-        this.actionManager.playSound(soundToPlay);
+        if (!this.configurationMananger.isSoundPlaying())
+            this.actionManager.playSound(soundToPlay);
     };
     ActiveState.prototype.onBackgroundTick = function (time) {
         this.onTick(time);

@@ -1,4 +1,5 @@
 ﻿abstract class PirateState implements IAliveAgent {
+    static get WALK_TIME(): number { return 1000; };
     static get SLEEPING(): string { return "sleeping"; };
     static get PASSIVE(): string { return "passive"; };
     static get ACTIVE(): string { return "active"; };
@@ -13,6 +14,9 @@
     protected awarenessManager: IAwarenessManager;
     protected timerTrigger: TimerTriggerSystem;
 
+    protected currentCategoryPlaying: string;
+    protected walking: boolean;
+
     protected resourceManagerHelper: ResourceManagerHelper;
 
     protected switchContext: IStateSwitchable;
@@ -26,6 +30,7 @@
     abstract onBackgroundTick(time: number): void;
 
     onStart(handler: IManagersHandler): void {
+        this.walking = false;
         this.actionManager = handler.getActionManager();
         this.resourceManager = handler.getResourceManager();
         this.databaseManager = handler.getDatabaseManager();
@@ -66,6 +71,27 @@
 
     abstract initializeState(): void;
 
+    walkRandomally(): void {
+        let screenWidth = this.configurationMananger.getScreenWidth();
+        let currentX = this.characterManager.getCurrentCharacterXPosition();
+        let distanceToMove = Math.abs(currentX - screenWidth);
+        let category = AgentConstants.ON_FALLING_RIGHT;
+        this.walking = true;
+        if (this.shouldEventHappen(50) && distanceToMove > screenWidth / 4) {//walk 
+            this.actionManager.move(distanceToMove / 3, 0, PirateState.WALK_TIME);
+        }
+        else {
+            this.actionManager.move(-distanceToMove / 3, 0, PirateState.WALK_TIME);
+            category = AgentConstants.ON_FALLING_LEFT;
+        }
+
+        let resToDraw = this.resourceManagerHelper.chooseRandomImage(category);
+        this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
+        let soundToPlay = this.resourceManagerHelper.chooseRandomSound(category);
+        if (!this.configurationMananger.isSoundPlaying())
+            this.actionManager.playSound(soundToPlay);
+    }
+
     shouldEventHappen(chance: number): boolean {
         return Math.random() < chance;
     }
@@ -78,7 +104,8 @@ enum PassiveSubstate {
     Reading,
     DoingSomethingStupid,
     RespondsToEvents,
-    AskingForInteraction
+    AskingForInteraction,
+    WalkingAround
 }
 
 class PassiveState extends PirateState {
@@ -134,30 +161,45 @@ class PassiveState extends PirateState {
             case PassiveSubstate.AskingForInteraction:
                 this.askingForInteractionTick(time);
                 break;
+
+            case PassiveSubstate.WalkingAround:
+                this.walkingAroundTick(time);
+                break;
         }
     }
 
     lookingAroundTick(time: number): void {
         if (this.shouldEventHappen(PassiveState.LOOKING_AROUND_CHANGE)) {
             if (this.shouldEventHappen(PassiveState.CHANGE_PASSIVE_STATE)) {
+                this.actionManager.stopSound();
                 this.currentState = PassiveSubstate.DoingSomethingStupid;
                 this.timerTrigger.set("doingSomethingStupid", PassiveState.DOING_SOMETHING_STUPID_TIME);
             }
             else if (this.shouldEventHappen(PassiveState.CHANGE_PASSIVE_STATE)) {
+                this.actionManager.stopSound();
                 this.currentState = PassiveSubstate.Eating;
                 this.timerTrigger.set("eating", PassiveState.EATING_TIME);
             }
             else if (this.shouldEventHappen(PassiveState.CHANGE_PASSIVE_STATE)) {
+                this.actionManager.stopSound();
                 this.currentState = PassiveSubstate.Reading;
                 this.timerTrigger.set("reading", PassiveState.READING_TIME);
             }
             else if (this.shouldEventHappen(PassiveState.CHANGE_PASSIVE_STATE)) {
+                this.actionManager.stopSound();
                 this.currentState = PassiveSubstate.Drinking;
                 this.timerTrigger.set("drinking", PassiveState.EATING_TIME);
             }
             else if (this.shouldEventHappen(PassiveState.CHANGE_PASSIVE_STATE)) {
+                this.actionManager.stopSound();
                 this.currentState = PassiveSubstate.AskingForInteraction;
                 this.timerTrigger.set("askingForInteraction", PassiveState.ASKING_FOR_INTERACTION_TIME);
+            }
+            else {
+                this.actionManager.stopSound();
+                this.walkRandomally();
+                this.currentState = PassiveSubstate.WalkingAround;
+                this.timerTrigger.set("walkingAround", PirateState.WALK_TIME);
             }
         }
         this.lookingAroundEmote(time);
@@ -167,11 +209,13 @@ class PassiveState extends PirateState {
         let resToDraw = this.resourceManagerHelper.chooseRandomImage("lookingAround");
         this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
         let soundToPlay = this.resourceManagerHelper.chooseRandomSound("lookingAround");
-        this.actionManager.playSound(soundToPlay);
+        if (!this.configurationMananger.isSoundPlaying())
+            this.actionManager.playSound(soundToPlay);
     }
 
     eatingTick(time: number): void {
         if (!this.timerTrigger.isOnGoing("eating")) {
+            this.actionManager.stopSound();
             this.currentState = PassiveSubstate.LookingAround;
             return;
         }
@@ -182,11 +226,13 @@ class PassiveState extends PirateState {
         let resToDraw = this.resourceManagerHelper.chooseRandomImage("eating");
         this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
         let soundToPlay = this.resourceManagerHelper.chooseRandomSound("eating");
-        this.actionManager.playSound(soundToPlay);
+        if (!this.configurationMananger.isSoundPlaying())
+            this.actionManager.playSound(soundToPlay);
     }
 
     drinkingTick(time: number): void {
         if (!this.timerTrigger.isOnGoing("drinking")) {
+            this.actionManager.stopSound();
             this.currentState = PassiveSubstate.LookingAround;
             return;
         }
@@ -197,11 +243,13 @@ class PassiveState extends PirateState {
         let resToDraw = this.resourceManagerHelper.chooseRandomImage("drinking");
         this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
         let soundToPlay = this.resourceManagerHelper.chooseRandomSound("drinking");
-        this.actionManager.playSound(soundToPlay);
+        if (!this.configurationMananger.isSoundPlaying())
+            this.actionManager.playSound(soundToPlay);
     }
 
     readingTick(time: number): void {
         if (!this.timerTrigger.isOnGoing("reading")) {
+            this.actionManager.stopSound();
             this.currentState = PassiveSubstate.LookingAround;
             return;
         }
@@ -212,11 +260,13 @@ class PassiveState extends PirateState {
         let resToDraw = this.resourceManagerHelper.chooseRandomImage("reading");
         this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
         let soundToPlay = this.resourceManagerHelper.chooseRandomSound("reading");
-        this.actionManager.playSound(soundToPlay);
+        if (!this.configurationMananger.isSoundPlaying())
+            this.actionManager.playSound(soundToPlay);
     }
 
     askingForInteractionTick(time: number): void {
         if (!this.timerTrigger.isOnGoing("askingForInteraction")) {
+            this.actionManager.stopSound();
             this.currentState = PassiveSubstate.LookingAround;
             return;
         }
@@ -227,11 +277,13 @@ class PassiveState extends PirateState {
         let resToDraw = this.resourceManagerHelper.chooseRandomImage("askingForInteraction");
         this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
         let soundToPlay = this.resourceManagerHelper.chooseRandomSound("askingForInteraction");
-        this.actionManager.playSound(soundToPlay);
+        if (!this.configurationMananger.isSoundPlaying())
+            this.actionManager.playSound(soundToPlay);
     }
 
     doingSomethingStupidTick(time: number): void {
         if (!this.timerTrigger.isOnGoing("doingSomethingStupid")) {
+            this.actionManager.stopSound();
             this.currentState = PassiveSubstate.LookingAround;
             return;
         }
@@ -242,11 +294,21 @@ class PassiveState extends PirateState {
         let resToDraw = this.resourceManagerHelper.chooseRandomImage("doingSomethingStupid");
         this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
         let soundToPlay = this.resourceManagerHelper.chooseRandomSound("doingSomethingStupid");
-        this.actionManager.playSound(soundToPlay);
+        if (!this.configurationMananger.isSoundPlaying())
+            this.actionManager.playSound(soundToPlay);
     }
 
     respondsToEventsTick(time: number): void {
 
+    }
+
+    walkingAroundTick(time: number): void {
+        if (!this.timerTrigger.isOnGoing("walkingAround")) {
+            this.actionManager.stopSound();
+            this.walking = false;
+            this.currentState = PassiveSubstate.LookingAround;
+            return;
+        }
     }
 
     onBackgroundTick(time: number): void {
@@ -258,6 +320,7 @@ class PassiveState extends PirateState {
             eventName == AgentConstants.INCOMING_CALL ||
             eventName == AgentConstants.SMS_RECEIVED) {
             this.timerTrigger.set("fun", PassiveState.HAVING_FUN_TIME);
+            this.actionManager.stopSound();
             this.switchContext.switchTo(PirateState.ACTIVE);
         }
     }
@@ -303,7 +366,14 @@ class PassiveState extends PirateState {
 
     onConfigureMenuItems(menuBuilder: IMenuBuilder) { }
 
-    onSpeechRecognitionResults(results: string): void { }
+    onSpeechRecognitionResults(results: string): void {
+        if (results.indexOf("quite") != -1 || results.indexOf("shut") != -1
+            || results.indexOf("stupid") != -1 || results.indexOf("fuck") != -1) {
+            this.actionManager.stopSound();
+            this.currentState = PassiveSubstate.AskingForInteraction;
+            this.timerTrigger.set("askingForInteraction", PassiveState.ASKING_FOR_INTERACTION_TIME);
+        }
+    }
 
     onPlacesReceived(places: IAlivePlaceLikelihood[]): void { }
 }
@@ -342,6 +412,7 @@ class SleepingState extends PirateState {
         let now = this.configurationMananger.getCurrentTime();
         if (now.Hour < 22 && now.Hour > 8) {//8:59 is still a valid hour.. so he will sleep from 22:00 to 9:00
             this.switchContext.switchTo(PirateState.PASSIVE);
+            this.actionManager.stopSound();
             return;
         }
 
@@ -366,6 +437,7 @@ class SleepingState extends PirateState {
         }
 
         if (this.shouldEventHappen(0.25)) {
+            this.actionManager.stopSound();
             this.timerTrigger.set("sleep_nap", SleepingState.SNORE_TO_NORMAL_TIME);
             this.currentState = SleepingSubstate.Nap;
         }
@@ -375,11 +447,13 @@ class SleepingState extends PirateState {
         let resToDraw = this.resourceManagerHelper.chooseRandomImage("sleeping-normal");
         this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
         let soundToPlay = this.resourceManagerHelper.chooseRandomSound("sleeping-normal");
-        this.actionManager.playSound(soundToPlay);
+        if (!this.configurationMananger.isSoundPlaying())
+            this.actionManager.playSound(soundToPlay);
     }
 
     napTick(time: number) {
         if (!this.timerTrigger.isOnGoing("sleep_nap")) {
+            this.actionManager.stopSound();
             this.currentState = SleepingSubstate.Normal;
             return;
         }
@@ -391,11 +465,13 @@ class SleepingState extends PirateState {
         let resToDraw = this.resourceManagerHelper.chooseRandomImage("sleeping-nap");
         this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
         let soundToPlay = this.resourceManagerHelper.chooseRandomSound("sleeping-nap");
-        this.actionManager.playSound(soundToPlay);
+        if (!this.configurationMananger.isSoundPlaying())
+            this.actionManager.playSound(soundToPlay);
     }
 
     angryTick(time: number) {
         if (!this.timerTrigger.isOnGoing("angry")) {
+            this.actionManager.stopSound();
             this.currentState = SleepingSubstate.Normal;
             return;
         }
@@ -407,7 +483,8 @@ class SleepingState extends PirateState {
         let resToDraw = this.resourceManagerHelper.chooseRandomImage("angry");
         this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
         let soundToPlay = this.resourceManagerHelper.chooseRandomSound("angry");
-        this.actionManager.playSound(soundToPlay);
+        if (!this.configurationMananger.isSoundPlaying())
+            this.actionManager.playSound(soundToPlay);
     }
 
 
@@ -419,6 +496,7 @@ class SleepingState extends PirateState {
         if (eventName == AgentConstants.NEW_OUTGOING_CALL ||
             eventName == AgentConstants.INCOMING_CALL ||
             eventName == AgentConstants.SMS_RECEIVED) {
+            this.actionManager.stopSound();
             this.timerTrigger.set("angry", SleepingState.ANNOYED_TO_NORMAL_TIME);
             this.currentState = SleepingSubstate.Angry;
         }
@@ -467,7 +545,11 @@ class SleepingState extends PirateState {
 
     }
 
-    onSpeechRecognitionResults(results: string): void { }
+    onSpeechRecognitionResults(results: string): void {
+        this.actionManager.stopSound();
+        this.currentState = SleepingSubstate.Angry;
+        this.timerTrigger.set("angry", SleepingState.ANNOYED_TO_NORMAL_TIME);
+    }
 
     onPlacesReceived(places: IAlivePlaceLikelihood[]): void { }
 }
@@ -499,6 +581,7 @@ class ActiveState extends PirateState {
     onFunTick(time: number): void {
         if (!this.timerTrigger.isOnGoing("fun")) {
             this.switchContext.switchTo(PirateState.PASSIVE);
+            this.actionManager.stopSound();
             return;
         }
 
@@ -509,7 +592,8 @@ class ActiveState extends PirateState {
         let resToDraw = this.resourceManagerHelper.chooseRandomImage("fun");
         this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
         let soundToPlay = this.resourceManagerHelper.chooseRandomSound("fun");
-        this.actionManager.playSound(soundToPlay);
+        if (!this.configurationMananger.isSoundPlaying())
+            this.actionManager.playSound(soundToPlay);
     }
 
     onBackgroundTick(time: number) {

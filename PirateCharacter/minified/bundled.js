@@ -50,16 +50,11 @@ var AliveClass = (function () {
     AliveClass.prototype.onPick = function (currentX, currentY) {
         this.states.getValue(this.currentState).onPick(currentX, currentY);
     };
-    AliveClass.prototype.onMenuItemSelected = function (itemName) {
-        if (this.handler.getSpeechToTextManager().isSpeechRecognitionAvailable() && itemName == "button") {
+    AliveClass.prototype.onMenuItemSelected = function (viewName) {
+        if (this.handler.getSpeechToTextManager().isSpeechRecognitionAvailable() && viewName == "speakButton") {
             this.handler.getSpeechToTextManager().startSpeechRecognition();
         }
-        if (itemName == "button2") {
-            this.handler.getAwarenessManager().getPlaces();
-            var random = Math.random() * 100;
-            this.handler.getMenuManager().setProperty("progress", "Progress", random.toString());
-        }
-        this.states.getValue(this.currentState).onMenuItemSelected(itemName);
+        this.states.getValue(this.currentState).onMenuItemSelected(viewName);
     };
     AliveClass.prototype.onResponseReceived = function (response) {
         this.states.getValue(this.currentState).onResponseReceived(response);
@@ -78,97 +73,30 @@ var AliveClass = (function () {
     };
     AliveClass.prototype.onSpeechRecognitionResults = function (results) {
         this.states.getValue(this.currentState).onSpeechRecognitionResults(results);
-        this.handler.getActionManager().showMessage(results);
-        this.handler.getTextToSpeechManager().say(results);
     };
     AliveClass.prototype.onConfigureMenuItems = function (menuBuilder) {
         var button = new ButtonMenuItem();
         button.InitialX = 0;
-        button.InitialY = 0;
+        button.InitialY = 3;
         button.Height = 1;
-        button.Width = 2;
-        button.Text = "Hello Button";
+        button.Width = menuBuilder.getMaxColumns();
+        button.Text = "Click to speak with me!";
         button.TextColor = "#FFFFFF";
         button.BackgroundColor = "#000000";
-        button.Name = "button";
-        var button2 = new ButtonMenuItem();
-        button2.InitialX = 2;
-        button2.InitialY = 0;
-        button2.Height = 1;
-        button2.Width = 2;
-        button2.Text = "Hello Button2";
-        button2.TextColor = "#FFFFFF";
-        button2.BackgroundColor = "#000000";
-        button2.Name = "button2";
-        var progress = new ProgressBarMenuItem();
-        progress.InitialX = 0;
-        progress.InitialY = 1;
-        progress.Height = 1;
-        progress.Width = 2;
-        progress.TextColor = "#FFFFFF";
-        progress.BackgroundColor = "#000000";
-        progress.Name = "progress";
-        progress.Progress = 10;
-        progress.MaxProgress = 100;
-        progress.FrontColor = "#0FFF0f";
-        var progress2 = new ProgressBarMenuItem();
-        progress2.InitialX = 2;
-        progress2.InitialY = 1;
-        progress2.Height = 1;
-        progress2.Width = 2;
-        progress2.TextColor = "#FFFFFF";
-        progress2.BackgroundColor = "#000000";
-        progress2.Name = "progress2";
-        progress2.Progress = 90;
-        progress2.MaxProgress = 100;
-        progress2.FrontColor = "#FFAA0f";
+        button.Name = "speakButton";
         var picture = new PictureMenuItem();
         picture.InitialX = 0;
-        picture.InitialY = 2;
-        picture.Height = 1;
-        picture.Width = 2;
+        picture.InitialY = 0;
+        picture.Height = 3;
+        picture.Width = menuBuilder.getMaxColumns();
         picture.Name = "picture";
-        picture.PictureResourceName = "dead.png";
-        var picture2 = new PictureMenuItem();
-        picture2.InitialX = 2;
-        picture2.InitialY = 2;
-        picture2.Height = 1;
-        picture2.Width = 2;
-        picture2.Name = "picture2";
-        picture2.PictureResourceName = "example.gif";
-        var checkBox = new CheckBoxMenuItem();
-        checkBox.InitialX = 0;
-        checkBox.InitialY = 3;
-        checkBox.Height = 1;
-        checkBox.Width = 2;
-        checkBox.Text = "On";
-        checkBox.UncheckedText = "Off";
-        checkBox.TextColor = "#FAAAFF";
-        checkBox.FrontColor = "#333333";
-        checkBox.BackgroundColor = "#000000";
-        checkBox.Name = "checkbox";
-        checkBox.Checked = true;
-        var textBox = new TextBoxMenuItem();
-        textBox.InitialX = 0;
-        textBox.InitialY = 4;
-        textBox.Height = 1;
-        textBox.Width = 4;
-        textBox.Text = "textBox";
-        textBox.TextColor = "#AAFAFB";
-        textBox.BackgroundColor = "#000000";
-        textBox.Name = "textBox";
+        picture.PictureResourceName = PictureMenuItem.UseCoverPicture;
         var menuHeader = new MenuHeader();
         menuHeader.TextColor = "#1a1a00";
         menuHeader.BackgroundColor = "#ffff99";
         menuBuilder.createMenuHeader(menuHeader);
         menuBuilder.createButton(button);
-        menuBuilder.createButton(button2);
-        menuBuilder.createTextBox(textBox);
-        menuBuilder.createCheckBox(checkBox);
         menuBuilder.createPicture(picture);
-        menuBuilder.createPicture(picture2);
-        menuBuilder.createProgressBar(progress);
-        menuBuilder.createProgressBar(progress2);
     };
     AliveClass.prototype.onPlacesReceived = function (places) {
         this.handler.getActionManager().showMessage(JSON.stringify(places));
@@ -422,14 +350,11 @@ var ResourceManagerHelper = (function () {
 ;
 //# sourceMappingURL=IDatabaseManager.js.map
 //# sourceMappingURL=IManagersHandler.js.map
-//# sourceMappingURL=IMenuBuilder.js.map
 ;
 //# sourceMappingURL=IMenuManager.js.map
 ;
 //# sourceMappingURL=IResourceManager.js.map
 //# sourceMappingURL=IRestManager.js.map
-;
-//# sourceMappingURL=ISpeechManager.js.map
 ;
 //# sourceMappingURL=ISpeechToTextManager.js.map
 ;
@@ -444,6 +369,12 @@ var PirateState = (function () {
     function PirateState(switchContext) {
         this.switchContext = switchContext;
     }
+    Object.defineProperty(PirateState, "WALK_TIME", {
+        get: function () { return 1000; },
+        enumerable: true,
+        configurable: true
+    });
+    ;
     Object.defineProperty(PirateState, "SLEEPING", {
         get: function () { return "sleeping"; },
         enumerable: true,
@@ -464,6 +395,7 @@ var PirateState = (function () {
     ;
     PirateState.prototype.onStart = function (handler) {
         var _this = this;
+        this.walking = false;
         this.actionManager = handler.getActionManager();
         this.resourceManager = handler.getResourceManager();
         this.databaseManager = handler.getDatabaseManager();
@@ -474,6 +406,25 @@ var PirateState = (function () {
         this.awarenessManager = handler.getAwarenessManager();
         this.resourceManagerHelper = new ResourceManagerHelper(this.resourceManager);
         this.timerTrigger = new TimerTriggerSystem(function () { return _this.configurationMananger.getCurrentTime().currentTimeMillis; });
+    };
+    PirateState.prototype.walkRandomally = function () {
+        var screenWidth = this.configurationMananger.getScreenWidth();
+        var currentX = this.characterManager.getCurrentCharacterXPosition();
+        var distanceToMove = Math.abs(currentX - screenWidth);
+        var category = AgentConstants.ON_FALLING_RIGHT;
+        this.walking = true;
+        if (this.shouldEventHappen(50) && distanceToMove > screenWidth / 4) {
+            this.actionManager.move(distanceToMove / 3, 0, PirateState.WALK_TIME);
+        }
+        else {
+            this.actionManager.move(-distanceToMove / 3, 0, PirateState.WALK_TIME);
+            category = AgentConstants.ON_FALLING_LEFT;
+        }
+        var resToDraw = this.resourceManagerHelper.chooseRandomImage(category);
+        this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
+        var soundToPlay = this.resourceManagerHelper.chooseRandomSound(category);
+        if (!this.configurationMananger.isSoundPlaying())
+            this.actionManager.playSound(soundToPlay);
     };
     PirateState.prototype.shouldEventHappen = function (chance) {
         return Math.random() < chance;
@@ -489,11 +440,12 @@ var PassiveSubstate;
     PassiveSubstate[PassiveSubstate["DoingSomethingStupid"] = 4] = "DoingSomethingStupid";
     PassiveSubstate[PassiveSubstate["RespondsToEvents"] = 5] = "RespondsToEvents";
     PassiveSubstate[PassiveSubstate["AskingForInteraction"] = 6] = "AskingForInteraction";
+    PassiveSubstate[PassiveSubstate["WalkingAround"] = 7] = "WalkingAround";
 })(PassiveSubstate || (PassiveSubstate = {}));
 var PassiveState = (function (_super) {
     __extends(PassiveState, _super);
     function PassiveState(switchContext) {
-        _super.call(this, switchContext);
+        return _super.call(this, switchContext) || this;
     }
     Object.defineProperty(PassiveState, "LOOKING_AROUND_CHANGE", {
         get: function () { return 0.2; },
@@ -566,6 +518,9 @@ var PassiveState = (function (_super) {
             case PassiveSubstate.AskingForInteraction:
                 this.askingForInteractionTick(time);
                 break;
+            case PassiveSubstate.WalkingAround:
+                this.walkingAroundTick(time);
+                break;
         }
     };
     PassiveState.prototype.lookingAroundTick = function (time) {
@@ -590,6 +545,11 @@ var PassiveState = (function (_super) {
                 this.currentState = PassiveSubstate.AskingForInteraction;
                 this.timerTrigger.set("askingForInteraction", PassiveState.ASKING_FOR_INTERACTION_TIME);
             }
+            else {
+                this.walkRandomally();
+                this.currentState = PassiveSubstate.WalkingAround;
+                this.timerTrigger.set("walkingAround", PirateState.WALK_TIME);
+            }
         }
         this.lookingAroundEmote(time);
     };
@@ -597,7 +557,8 @@ var PassiveState = (function (_super) {
         var resToDraw = this.resourceManagerHelper.chooseRandomImage("lookingAround");
         this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
         var soundToPlay = this.resourceManagerHelper.chooseRandomSound("lookingAround");
-        this.actionManager.playSound(soundToPlay);
+        if (!this.configurationMananger.isSoundPlaying())
+            this.actionManager.playSound(soundToPlay);
     };
     PassiveState.prototype.eatingTick = function (time) {
         if (!this.timerTrigger.isOnGoing("eating")) {
@@ -610,7 +571,8 @@ var PassiveState = (function (_super) {
         var resToDraw = this.resourceManagerHelper.chooseRandomImage("eating");
         this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
         var soundToPlay = this.resourceManagerHelper.chooseRandomSound("eating");
-        this.actionManager.playSound(soundToPlay);
+        if (!this.configurationMananger.isSoundPlaying())
+            this.actionManager.playSound(soundToPlay);
     };
     PassiveState.prototype.drinkingTick = function (time) {
         if (!this.timerTrigger.isOnGoing("drinking")) {
@@ -623,7 +585,8 @@ var PassiveState = (function (_super) {
         var resToDraw = this.resourceManagerHelper.chooseRandomImage("drinking");
         this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
         var soundToPlay = this.resourceManagerHelper.chooseRandomSound("drinking");
-        this.actionManager.playSound(soundToPlay);
+        if (!this.configurationMananger.isSoundPlaying())
+            this.actionManager.playSound(soundToPlay);
     };
     PassiveState.prototype.readingTick = function (time) {
         if (!this.timerTrigger.isOnGoing("reading")) {
@@ -636,7 +599,8 @@ var PassiveState = (function (_super) {
         var resToDraw = this.resourceManagerHelper.chooseRandomImage("reading");
         this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
         var soundToPlay = this.resourceManagerHelper.chooseRandomSound("reading");
-        this.actionManager.playSound(soundToPlay);
+        if (!this.configurationMananger.isSoundPlaying())
+            this.actionManager.playSound(soundToPlay);
     };
     PassiveState.prototype.askingForInteractionTick = function (time) {
         if (!this.timerTrigger.isOnGoing("askingForInteraction")) {
@@ -649,7 +613,8 @@ var PassiveState = (function (_super) {
         var resToDraw = this.resourceManagerHelper.chooseRandomImage("askingForInteraction");
         this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
         var soundToPlay = this.resourceManagerHelper.chooseRandomSound("askingForInteraction");
-        this.actionManager.playSound(soundToPlay);
+        if (!this.configurationMananger.isSoundPlaying())
+            this.actionManager.playSound(soundToPlay);
     };
     PassiveState.prototype.doingSomethingStupidTick = function (time) {
         if (!this.timerTrigger.isOnGoing("doingSomethingStupid")) {
@@ -662,9 +627,17 @@ var PassiveState = (function (_super) {
         var resToDraw = this.resourceManagerHelper.chooseRandomImage("doingSomethingStupid");
         this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
         var soundToPlay = this.resourceManagerHelper.chooseRandomSound("doingSomethingStupid");
-        this.actionManager.playSound(soundToPlay);
+        if (!this.configurationMananger.isSoundPlaying())
+            this.actionManager.playSound(soundToPlay);
     };
     PassiveState.prototype.respondsToEventsTick = function (time) {
+    };
+    PassiveState.prototype.walkingAroundTick = function (time) {
+        if (!this.timerTrigger.isOnGoing("walkingAround")) {
+            this.walking = false;
+            this.currentState = PassiveSubstate.LookingAround;
+            return;
+        }
     };
     PassiveState.prototype.onBackgroundTick = function (time) {
         this.onTick(time);
@@ -674,6 +647,7 @@ var PassiveState = (function (_super) {
             eventName == AgentConstants.INCOMING_CALL ||
             eventName == AgentConstants.SMS_RECEIVED) {
             this.timerTrigger.set("fun", PassiveState.HAVING_FUN_TIME);
+            this.actionManager.stopSound();
             this.switchContext.switchTo(PirateState.ACTIVE);
         }
     };
@@ -699,7 +673,13 @@ var PassiveState = (function (_super) {
     PassiveState.prototype.onWeatherReceived = function (weather) {
     };
     PassiveState.prototype.onConfigureMenuItems = function (menuBuilder) { };
-    PassiveState.prototype.onSpeechRecognitionResults = function (results) { };
+    PassiveState.prototype.onSpeechRecognitionResults = function (results) {
+        if (results.indexOf("quite") != -1 || results.indexOf("shut") != -1
+            || results.indexOf("stupid") != -1 || results.indexOf("fuck") != -1) {
+            this.currentState = PassiveSubstate.AskingForInteraction;
+            this.timerTrigger.set("askingForInteraction", PassiveState.ASKING_FOR_INTERACTION_TIME);
+        }
+    };
     PassiveState.prototype.onPlacesReceived = function (places) { };
     return PassiveState;
 }(PirateState));
@@ -712,7 +692,7 @@ var SleepingSubstate;
 var SleepingState = (function (_super) {
     __extends(SleepingState, _super);
     function SleepingState(switchContext) {
-        _super.call(this, switchContext);
+        return _super.call(this, switchContext) || this;
     }
     Object.defineProperty(SleepingState, "ANNOYED_TO_NORMAL_TIME", {
         get: function () { return 5000; },
@@ -750,6 +730,7 @@ var SleepingState = (function (_super) {
         var now = this.configurationMananger.getCurrentTime();
         if (now.Hour < 22 && now.Hour > 8) {
             this.switchContext.switchTo(PirateState.PASSIVE);
+            this.actionManager.stopSound();
             return;
         }
         switch (this.currentState) {
@@ -777,7 +758,8 @@ var SleepingState = (function (_super) {
         var resToDraw = this.resourceManagerHelper.chooseRandomImage("sleeping-normal");
         this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
         var soundToPlay = this.resourceManagerHelper.chooseRandomSound("sleeping-normal");
-        this.actionManager.playSound(soundToPlay);
+        if (!this.configurationMananger.isSoundPlaying())
+            this.actionManager.playSound(soundToPlay);
     };
     SleepingState.prototype.napTick = function (time) {
         if (!this.timerTrigger.isOnGoing("sleep_nap")) {
@@ -790,7 +772,8 @@ var SleepingState = (function (_super) {
         var resToDraw = this.resourceManagerHelper.chooseRandomImage("sleeping-nap");
         this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
         var soundToPlay = this.resourceManagerHelper.chooseRandomSound("sleeping-nap");
-        this.actionManager.playSound(soundToPlay);
+        if (!this.configurationMananger.isSoundPlaying())
+            this.actionManager.playSound(soundToPlay);
     };
     SleepingState.prototype.angryTick = function (time) {
         if (!this.timerTrigger.isOnGoing("angry")) {
@@ -803,7 +786,8 @@ var SleepingState = (function (_super) {
         var resToDraw = this.resourceManagerHelper.chooseRandomImage("angry");
         this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
         var soundToPlay = this.resourceManagerHelper.chooseRandomSound("angry");
-        this.actionManager.playSound(soundToPlay);
+        if (!this.configurationMananger.isSoundPlaying())
+            this.actionManager.playSound(soundToPlay);
     };
     SleepingState.prototype.onBackgroundTick = function (time) {
         this.onTick(time);
@@ -839,7 +823,10 @@ var SleepingState = (function (_super) {
     };
     SleepingState.prototype.onConfigureMenuItems = function (menuBuilder) {
     };
-    SleepingState.prototype.onSpeechRecognitionResults = function (results) { };
+    SleepingState.prototype.onSpeechRecognitionResults = function (results) {
+        this.currentState = SleepingSubstate.Angry;
+        this.timerTrigger.set("angry", SleepingState.ANNOYED_TO_NORMAL_TIME);
+    };
     SleepingState.prototype.onPlacesReceived = function (places) { };
     return SleepingState;
 }(PirateState));
@@ -850,7 +837,7 @@ var ActiveSubstate;
 var ActiveState = (function (_super) {
     __extends(ActiveState, _super);
     function ActiveState(switchContext) {
-        _super.call(this, switchContext);
+        return _super.call(this, switchContext) || this;
     }
     ActiveState.prototype.initializeState = function () {
         this.currentState = ActiveSubstate.Fun;
@@ -865,6 +852,7 @@ var ActiveState = (function (_super) {
     ActiveState.prototype.onFunTick = function (time) {
         if (!this.timerTrigger.isOnGoing("fun")) {
             this.switchContext.switchTo(PirateState.PASSIVE);
+            this.actionManager.stopSound();
             return;
         }
         this.funEmote(time);
@@ -873,7 +861,8 @@ var ActiveState = (function (_super) {
         var resToDraw = this.resourceManagerHelper.chooseRandomImage("fun");
         this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
         var soundToPlay = this.resourceManagerHelper.chooseRandomSound("fun");
-        this.actionManager.playSound(soundToPlay);
+        if (!this.configurationMananger.isSoundPlaying())
+            this.actionManager.playSound(soundToPlay);
     };
     ActiveState.prototype.onBackgroundTick = function (time) {
         this.onTick(time);
@@ -1620,8 +1609,8 @@ var collections;
             };
         };
         return LinkedList;
-    }());
-    collections.LinkedList = LinkedList; // End of linked list 
+    }()); // End of linked list 
+    collections.LinkedList = LinkedList;
     var Dictionary = (function () {
         /**
          * Creates an empty dictionary.
@@ -1793,8 +1782,8 @@ var collections;
             return toret + "\n}";
         };
         return Dictionary;
-    }());
-    collections.Dictionary = Dictionary; // End of dictionary
+    }()); // End of dictionary
+    collections.Dictionary = Dictionary;
     /**
      * This class is used by the LinkedDictionary Internally
      * Has to be a class, not an interface, because it needs to have
@@ -1814,11 +1803,12 @@ var collections;
     var LinkedDictionary = (function (_super) {
         __extends(LinkedDictionary, _super);
         function LinkedDictionary(toStrFunction) {
-            _super.call(this, toStrFunction);
-            this.head = new LinkedDictionaryPair(null, null);
-            this.tail = new LinkedDictionaryPair(null, null);
-            this.head.next = this.tail;
-            this.tail.prev = this.head;
+            var _this = _super.call(this, toStrFunction) || this;
+            _this.head = new LinkedDictionaryPair(null, null);
+            _this.tail = new LinkedDictionaryPair(null, null);
+            _this.head.next = _this.tail;
+            _this.tail.prev = _this.head;
+            return _this;
         }
         /**
          * Inserts the new node to the 'tail' of the list, updating the
@@ -1983,8 +1973,8 @@ var collections;
             }
         };
         return LinkedDictionary;
-    }(Dictionary));
-    collections.LinkedDictionary = LinkedDictionary; // End of LinkedDictionary
+    }(Dictionary)); // End of LinkedDictionary
+    collections.LinkedDictionary = LinkedDictionary;
     // /**
     //  * Returns true if this dictionary is equal to the given dictionary.
     //  * Two dictionaries are equal if they contain the same mappings.
@@ -2163,8 +2153,8 @@ var collections;
             return this.dict.isEmpty();
         };
         return MultiDictionary;
-    }());
-    collections.MultiDictionary = MultiDictionary; // end of multi dictionary 
+    }()); // end of multi dictionary 
+    collections.MultiDictionary = MultiDictionary;
     var Heap = (function () {
         /**
          * Creates an empty Heap.
@@ -2484,8 +2474,8 @@ var collections;
             this.list.forEach(callback);
         };
         return Stack;
-    }());
-    collections.Stack = Stack; // End of stack 
+    }()); // End of stack 
+    collections.Stack = Stack;
     var Queue = (function () {
         /**
          * Creates an empty queue.
@@ -2588,8 +2578,8 @@ var collections;
             this.list.forEach(callback);
         };
         return Queue;
-    }());
-    collections.Queue = Queue; // End of queue
+    }()); // End of queue
+    collections.Queue = Queue;
     var PriorityQueue = (function () {
         /**
          * Creates an empty priority queue.
@@ -2695,8 +2685,8 @@ var collections;
             this.heap.forEach(callback);
         };
         return PriorityQueue;
-    }());
-    collections.PriorityQueue = PriorityQueue; // end of priority queue
+    }()); // end of priority queue
+    collections.PriorityQueue = PriorityQueue;
     var Set = (function () {
         /**
          * Creates an empty set.
@@ -2858,8 +2848,8 @@ var collections;
             return collections.arrays.toString(this.toArray());
         };
         return Set;
-    }());
-    collections.Set = Set; // end of Set
+    }()); // end of Set
+    collections.Set = Set;
     var Bag = (function () {
         /**
          * Creates an empty bag.
@@ -3038,8 +3028,8 @@ var collections;
             this.dictionary.clear();
         };
         return Bag;
-    }());
-    collections.Bag = Bag; // End of bag 
+    }()); // End of bag 
+    collections.Bag = Bag;
     var BSTree = (function () {
         /**
          * Creates an empty binary search tree.
@@ -3433,8 +3423,8 @@ var collections;
             };
         };
         return BSTree;
-    }());
-    collections.BSTree = BSTree; // end of BSTree
+    }()); // end of BSTree
+    collections.BSTree = BSTree;
 })(collections || (collections = {})); // End of module 
 //# sourceMappingURL=collections.js.map
 //# sourceMappingURL=ICalendarEvent.js.map
@@ -3452,10 +3442,10 @@ var PictureMenuItem = (function () {
     function PictureMenuItem() {
         this.ViewType = ViewType.Picture;
     }
-    PictureMenuItem.UseProfilePicture = "Use Profile Picture";
-    PictureMenuItem.UseCoverPicture = "Use Cover Picture";
     return PictureMenuItem;
 }());
+PictureMenuItem.UseProfilePicture = "Use Profile Picture";
+PictureMenuItem.UseCoverPicture = "Use Cover Picture";
 var ButtonMenuItem = (function () {
     function ButtonMenuItem() {
         this.ViewType = ViewType.Button;

@@ -68,18 +68,12 @@ class AliveClass implements IAliveAgent, IStateSwitchable {
         this.states.getValue(this.currentState).onPick(currentX, currentY);
     }
 
-    onMenuItemSelected(itemName: string): void {
-        if (this.handler.getSpeechToTextManager().isSpeechRecognitionAvailable() && itemName == "button") {
+    onMenuItemSelected(viewName: string): void {
+        if (this.handler.getSpeechToTextManager().isSpeechRecognitionAvailable() && viewName == "speakButton") {
             this.handler.getSpeechToTextManager().startSpeechRecognition();
         }
 
-        if (itemName == "button2") {
-            this.handler.getAwarenessManager().getPlaces();
-            let random = Math.random() * 100;
-            this.handler.getMenuManager().setProperty("progress", "Progress", random.toString());
-        }
-
-        this.states.getValue(this.currentState).onMenuItemSelected(itemName);
+        this.states.getValue(this.currentState).onMenuItemSelected(viewName);
     }
 
     onResponseReceived(response: string): void {
@@ -104,93 +98,26 @@ class AliveClass implements IAliveAgent, IStateSwitchable {
 
     onSpeechRecognitionResults(results: string): void {
         this.states.getValue(this.currentState).onSpeechRecognitionResults(results);
-        this.handler.getActionManager().showMessage(results);
-        this.handler.getTextToSpeechManager().say(results);
     }
 
     onConfigureMenuItems(menuBuilder: IMenuBuilder): void {
         let button = new ButtonMenuItem();
         button.InitialX = 0;
-        button.InitialY = 0;
+        button.InitialY = 3;
         button.Height = 1;
-        button.Width = 2;
-        button.Text = "Hello Button";
+        button.Width = menuBuilder.getMaxColumns();
+        button.Text = "Click to speak with me!";
         button.TextColor = "#FFFFFF";
         button.BackgroundColor = "#000000";
-        button.Name = "button";
-        
-        let button2 = new ButtonMenuItem();
-        button2.InitialX = 2;
-        button2.InitialY = 0;
-        button2.Height = 1;
-        button2.Width = 2;
-        button2.Text = "Hello Button2";
-        button2.TextColor = "#FFFFFF";
-        button2.BackgroundColor = "#000000";
-        button2.Name = "button2";
-        
-        let progress = new ProgressBarMenuItem();
-        progress.InitialX = 0;
-        progress.InitialY = 1;
-        progress.Height = 1;
-        progress.Width = 2;
-        progress.TextColor = "#FFFFFF";
-        progress.BackgroundColor = "#000000";
-        progress.Name = "progress";
-        progress.Progress = 10;
-        progress.MaxProgress = 100;
-        progress.FrontColor = "#0FFF0f";
-
-        let progress2 = new ProgressBarMenuItem();
-        progress2.InitialX = 2;
-        progress2.InitialY = 1;
-        progress2.Height = 1;
-        progress2.Width = 2;
-        progress2.TextColor = "#FFFFFF";
-        progress2.BackgroundColor = "#000000";
-        progress2.Name = "progress2";
-        progress2.Progress = 90;
-        progress2.MaxProgress = 100;
-        progress2.FrontColor = "#FFAA0f";
+        button.Name = "speakButton";      
 
         let picture = new PictureMenuItem();
         picture.InitialX = 0;
-        picture.InitialY = 2;
-        picture.Height = 1;
-        picture.Width = 2;
+        picture.InitialY = 0;
+        picture.Height = 3;
+        picture.Width = menuBuilder.getMaxColumns();
         picture.Name = "picture";
-        picture.PictureResourceName = "dead.png";
-
-        let picture2 = new PictureMenuItem();
-        picture2.InitialX = 2;
-        picture2.InitialY = 2;
-        picture2.Height = 1;
-        picture2.Width = 2;
-        picture2.Name = "picture2";
-        picture2.PictureResourceName = "example.gif";
-
-        let checkBox = new CheckBoxMenuItem();
-        checkBox.InitialX = 0;
-        checkBox.InitialY = 3;
-        checkBox.Height = 1;
-        checkBox.Width = 2;
-        checkBox.Text = "On";
-        checkBox.UncheckedText = "Off";
-        checkBox.TextColor = "#FAAAFF";
-        checkBox.FrontColor = "#333333";
-        checkBox.BackgroundColor = "#000000";
-        checkBox.Name = "checkbox";
-        checkBox.Checked = true;
-
-        let textBox = new TextBoxMenuItem();
-        textBox.InitialX = 0;
-        textBox.InitialY = 4;
-        textBox.Height = 1;
-        textBox.Width = 4;
-        textBox.Text = "textBox";
-        textBox.TextColor = "#AAFAFB";
-        textBox.BackgroundColor = "#000000";
-        textBox.Name = "textBox";
+        picture.PictureResourceName = PictureMenuItem.UseCoverPicture;
 
         let menuHeader = new MenuHeader();
         menuHeader.TextColor = "#1a1a00";
@@ -198,13 +125,7 @@ class AliveClass implements IAliveAgent, IStateSwitchable {
 
         menuBuilder.createMenuHeader(menuHeader);
         menuBuilder.createButton(button);
-        menuBuilder.createButton(button2);
-        menuBuilder.createTextBox(textBox);
-        menuBuilder.createCheckBox(checkBox);
         menuBuilder.createPicture(picture);
-        menuBuilder.createPicture(picture2);
-        menuBuilder.createProgressBar(progress);
-        menuBuilder.createProgressBar(progress2);
     }
 
     onPlacesReceived(places: IAlivePlaceLikelihood[]): void {

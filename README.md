@@ -14,26 +14,26 @@ In order to use this template, do the following steps:
 
 ### The code:
 Most of the action responds work is done in the "onActionReceived" method:
-```javascript
-    onActionReceived(actionName: string, jsonedData: string): void {
-        this.handler.getActionManager().showMessage(actionName);
-        this.states.getValue(this.currentState).onActionReceived(actionName);
+```typescript
+    onPhoneEventOccurred(eventName: string, jsonedData: string): void {
+        this.handler.getActionManager().showMessage(eventName);
+        this.states.getValue(this.currentState).onActionReceived(eventName);
     }
 ```
 The character menu work is done in the "onMenuItemSelected" method:
 ```javascript
-    onMenuItemSelected(itemName: string): void {
-        if (this.handler.getSpeechToTextManager().isSpeechRecognitionAvailable() && itemName == "button") {
+    onMenuItemSelected(viewName: string): void {
+        if (this.handler.getSpeechToTextManager().isSpeechRecognitionAvailable() && viewName == "button") {
             this.handler.getSpeechToTextManager().startSpeechRecognition();
         }
 
-        if (itemName == "button2") {
+        if (viewName == "button2") {
             this.handler.getAwarenessManager().getPlaces();
             let random = Math.random() * 100;
             this.handler.getMenuManager().setProperty("progress", "Progress", random.toString());
         }
 
-        this.states.getValue(this.currentState).onMenuItemSelected(itemName);
+        this.states.getValue(this.currentState).onMenuItemSelected(viewName);
     }
 ```
 The mood-state machine is implemented at the [Pirate state](https://github.com/hay12396/PirateProject/blob/master/PirateProject/Pirate/PirateState.ts) file.

@@ -14,14 +14,14 @@ In order to use this template, do the following steps:
 
 ### The code:
 Most of the action responds work is done in the "onActionReceived" method:
-```
+```javascript
     onActionReceived(actionName: string, jsonedData: string): void {
         this.handler.getActionManager().showMessage(actionName);
         this.states.getValue(this.currentState).onActionReceived(actionName);
     }
 ```
 The character menu work is done in the "onMenuItemSelected" method:
-```
+```javascript
     onMenuItemSelected(itemName: string): void {
         if (this.handler.getSpeechToTextManager().isSpeechRecognitionAvailable() && itemName == "button") {
             this.handler.getSpeechToTextManager().startSpeechRecognition();

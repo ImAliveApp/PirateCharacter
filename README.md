@@ -14,7 +14,7 @@ In order to use this template, do the following steps:
 
 ### The code:
 Most of the action responds work is done in the "onActionReceived" method:
-```typescript
+```javascript
     onPhoneEventOccurred(eventName: string, jsonedData: string): void {
         this.handler.getActionManager().showMessage(eventName);
         this.states.getValue(this.currentState).onActionReceived(eventName);

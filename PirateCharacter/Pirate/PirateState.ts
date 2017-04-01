@@ -5,13 +5,10 @@
     static get ACTIVE(): string { return "active"; };
     protected actionManager: IActionManager;
     protected resourceManager: IResourceManager;
-    protected databaseManager: IDatabaseManager;
     protected characterManager: ICharacterManager;
-    protected menuManager: IMenuManager;
     protected configurationMananger: IConfigurationManager;
-    protected restManager: IRestManager;
     protected managersHandler: IManagersHandler;
-    protected awarenessManager: IAwarenessManager;
+
     protected timerTrigger: TimerTriggerSystem;
 
     protected currentCategoryPlaying: string;
@@ -33,12 +30,8 @@
         this.walking = false;
         this.actionManager = handler.getActionManager();
         this.resourceManager = handler.getResourceManager();
-        this.databaseManager = handler.getDatabaseManager();
         this.characterManager = handler.getCharacterManager();
-        this.menuManager = handler.getMenuManager();
         this.configurationMananger = handler.getConfigurationManager();
-        this.restManager = handler.getRestManager();
-        this.awarenessManager = handler.getAwarenessManager();
         this.resourceManagerHelper = new ResourceManagerHelper(this.resourceManager);
         this.timerTrigger = new TimerTriggerSystem(() => this.configurationMananger.getCurrentTime().currentTimeMillis);
     }

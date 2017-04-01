@@ -102,7 +102,7 @@ enum PassiveSubstate {
 }
 
 class PassiveState extends PirateState {
-    static get LOOKING_AROUND_CHANGE(): number { return 0.2; };
+    static get LOOKING_AROUND_CHANGE(): number { return 0.1; };
     static get CHANGE_PASSIVE_STATE(): number { return 0.25; };
     static get EATING_TIME(): number { return 10000; };
     static get READING_TIME(): number { return 20000; };
@@ -195,7 +195,8 @@ class PassiveState extends PirateState {
                 this.timerTrigger.set("walkingAround", PirateState.WALK_TIME);
             }
         }
-        this.lookingAroundEmote(time);
+        else
+            this.lookingAroundEmote(time);
     }
 
     lookingAroundEmote(time: number): void {

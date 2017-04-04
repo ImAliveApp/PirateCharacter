@@ -354,6 +354,7 @@ var AliveSmsData = (function () {
 //# sourceMappingURL=IAliveWeather.js.map
 //# sourceMappingURL=ICurrentTime.js.map
 //# sourceMappingURL=IMenuBuilder.js.map
+//# sourceMappingURL=IRectangle.js.map
 //# sourceMappingURL=ITime.js.map
 //# sourceMappingURL=IVoice.js.map
 var ResourceManagerHelper = (function () {

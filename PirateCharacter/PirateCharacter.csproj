@@ -34,6 +34,7 @@
     <TypeScriptCompile Include="AliveEnvironmentObjects\AliveSmsData.ts" />
     <TypeScriptCompile Include="AliveEnvironmentObjects\Calendar\ICalendarEvent.ts" />
     <TypeScriptCompile Include="AliveEnvironmentObjects\ICurrentTime.ts" />
+    <TypeScriptCompile Include="AliveEnvironmentObjects\IRectangle.ts" />
     <TypeScriptCompile Include="AliveEnvironmentObjects\IVoice.ts" />
     <TypeScriptCompile Include="AliveEnvironmentObjects\Places\IAliveLatLng.ts" />
     <TypeScriptCompile Include="AliveEnvironmentObjects\Places\IAliveLatLngBounds.ts" />

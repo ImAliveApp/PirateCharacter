@@ -28,7 +28,7 @@ class AliveClass implements IAliveAgent, IStateSwitchable {
      * @param time The current time (in milliseconds) on the device.
      */
     onTick(time: number): void {
-        this.states.getValue(this.currentState).onTick(time);
+        this.states.getValue(this.currentState).onTick(time);  
     }
 
     /**

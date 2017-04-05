@@ -22,7 +22,6 @@
     <Service Include="{4A0DDDB5-7A95-4FBF-97CC-616D07737A77}" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="app.css" />
     <Content Include="gulpfile.js" />
     <Content Include="index.html" />
     <Content Include="Scripts\collections.js" />
@@ -56,10 +55,10 @@
     <TypeScriptCompile Include="AliveInterfaces\ICalendarManager.ts" />
     <TypeScriptCompile Include="AliveEnvironmentObjects\IMenuBuilder.ts" />
     <TypeScriptCompile Include="AliveEnvironmentObjects\AgentConstants.ts" />
-    <TypeScriptCompile Include="AliveEnvironmentObjects\IAliveLocation.ts" />
+    <TypeScriptCompile Include="AliveEnvironmentObjects\AwarenessClasses\IAliveLocation.ts" />
     <TypeScriptCompile Include="AliveEnvironmentObjects\IAliveResource.ts" />
-    <TypeScriptCompile Include="AliveEnvironmentObjects\IAliveUserActivity.ts" />
-    <TypeScriptCompile Include="AliveEnvironmentObjects\IAliveWeather.ts" />
+    <TypeScriptCompile Include="AliveEnvironmentObjects\AwarenessClasses\IAliveUserActivity.ts" />
+    <TypeScriptCompile Include="AliveEnvironmentObjects\AwarenessClasses\IAliveWeather.ts" />
     <TypeScriptCompile Include="AliveEnvironmentObjects\ITime.ts" />
     <TypeScriptCompile Include="AliveInterfaces\IActionManager.ts" />
     <TypeScriptCompile Include="AliveInterfaces\IAliveAgent.ts" />

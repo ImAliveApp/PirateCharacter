@@ -20,7 +20,8 @@ var AliveClass = (function () {
      * @param time The current time (in milliseconds) on the device.
      */
     AliveClass.prototype.onTick = function (time) {
-        this.states.getValue(this.currentState).onTick(time);
+        //this.states.getValue(this.currentState).onTick(time);  
+        this.handler.getMenuManager().openMenu();
     };
     /**
      * This method gets called by the system every 1 hour (may be in a different rate depending on the device).

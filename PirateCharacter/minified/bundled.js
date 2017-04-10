@@ -20,7 +20,8 @@ var AliveClass = (function () {
      * @param time The current time (in milliseconds) on the device.
      */
     AliveClass.prototype.onTick = function (time) {
-        this.states.getValue(this.currentState).onTick(time);
+        //this.states.getValue(this.currentState).onTick(time);  
+        this.handler.getMenuManager().openMenu();
     };
     /**
      * This method gets called by the system every 1 hour (may be in a different rate depending on the device).
@@ -347,11 +348,8 @@ var AliveSmsData = (function () {
     return AliveSmsData;
 }());
 //# sourceMappingURL=AliveSmsData.js.map
-//# sourceMappingURL=IAliveLocation.js.map
 ;
 //# sourceMappingURL=IAliveResource.js.map
-//# sourceMappingURL=IAliveUserActivity.js.map
-//# sourceMappingURL=IAliveWeather.js.map
 //# sourceMappingURL=ICurrentTime.js.map
 //# sourceMappingURL=IMenuBuilder.js.map
 //# sourceMappingURL=IRectangle.js.map
@@ -448,11 +446,16 @@ var ResourceManagerHelper = (function () {
 ;
 //# sourceMappingURL=ITextToSpeechManager.js.map
 //# sourceMappingURL=IStateSwitchable.js.map
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var PirateState = (function () {
     function PirateState(switchContext) {
         this.switchContext = switchContext;
@@ -1024,11 +1027,16 @@ var TimerTriggerSystem = (function () {
 // Licensed under MIT open source license http://opensource.org/licenses/MIT
 //
 // Orginal javascript code was by Mauricio Santos
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 /**
  * @namespace Top level namespace for collections, a TypeScript data structure library.
  */
@@ -3530,6 +3538,9 @@ var collections;
     collections.BSTree = BSTree;
 })(collections || (collections = {})); // End of module 
 //# sourceMappingURL=collections.js.map
+//# sourceMappingURL=IAliveLocation.js.map
+//# sourceMappingURL=IAliveUserActivity.js.map
+//# sourceMappingURL=IAliveWeather.js.map
 //# sourceMappingURL=ICalendarEvent.js.map
 var BaseMenuItem = (function () {
     function BaseMenuItem() {

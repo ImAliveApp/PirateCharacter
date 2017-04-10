@@ -67,7 +67,7 @@ var AliveClass = (function () {
      * For example, SMS_RECEIVED event will hold data about who sent the SMS, and the SMS content.
      */
     AliveClass.prototype.onPhoneEventOccurred = function (eventName, jsonedData) {
-        this.handler.getActionManager().showMessage(eventName);
+        //this.handler.getActionManager().showMessage(eventName, "#000000", "#eeeeee", 1000);
         this.states.getValue(this.currentState).onPhoneEventOccurred(eventName);
     };
     /**
@@ -182,7 +182,7 @@ var AliveClass = (function () {
      * @param places A list of places that are near the device.
      */
     AliveClass.prototype.onPlacesReceived = function (places) {
-        this.handler.getActionManager().showMessage(JSON.stringify(places));
+        this.handler.getActionManager().showMessage(JSON.stringify(places), "#000000", "#eeeeee", 10000);
     };
     // IStateSwitchable
     /**

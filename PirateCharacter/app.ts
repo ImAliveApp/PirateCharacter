@@ -28,7 +28,7 @@ class AliveClass implements IAliveAgent, IStateSwitchable {
      * @param time The current time (in milliseconds) on the device.
      */
     onTick(time: number): void {
-        this.states.getValue(this.currentState).onTick(time);  
+        this.states.getValue(this.currentState).onTick(time);
     }
 
     /**
@@ -81,7 +81,7 @@ class AliveClass implements IAliveAgent, IStateSwitchable {
      * For example, SMS_RECEIVED event will hold data about who sent the SMS, and the SMS content.
      */
     onPhoneEventOccurred(eventName: string, jsonedData: string): void {
-        this.handler.getActionManager().showMessage(eventName);
+        //this.handler.getActionManager().showMessage(eventName, "#000000", "#eeeeee", 1000);
         this.states.getValue(this.currentState).onPhoneEventOccurred(eventName);
     }
 
@@ -212,7 +212,7 @@ class AliveClass implements IAliveAgent, IStateSwitchable {
      * @param places A list of places that are near the device.
      */
     onPlacesReceived(places: IAlivePlaceLikelihood[]): void {
-        this.handler.getActionManager().showMessage(JSON.stringify(places));
+        this.handler.getActionManager().showMessage(JSON.stringify(places), "#000000", "#eeeeee", 10000);
     }
 
     // IStateSwitchable

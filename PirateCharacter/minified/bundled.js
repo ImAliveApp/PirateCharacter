@@ -485,6 +485,7 @@ var PirateState = (function () {
     ;
     PirateState.prototype.onStart = function (handler) {
         var _this = this;
+        this.imageOnScreen = "";
         this.walking = false;
         this.actionManager = handler.getActionManager();
         this.resourceManager = handler.getResourceManager();
@@ -506,14 +507,19 @@ var PirateState = (function () {
             this.actionManager.move(-distanceToMove / 3, 0, PirateState.WALK_TIME);
             category = AgentConstants.ON_FALLING_LEFT;
         }
-        var resToDraw = this.resourceManagerHelper.chooseRandomImage(category);
-        this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
-        var soundToPlay = this.resourceManagerHelper.chooseRandomSound(category);
-        if (!this.configurationMananger.isSoundPlaying())
-            this.actionManager.playSound(soundToPlay, false);
+        this.drawAndPlayRandomResourceByCategory(category);
     };
     PirateState.prototype.shouldEventHappen = function (chance) {
         return Math.random() < chance;
+    };
+    PirateState.prototype.drawAndPlayRandomResourceByCategory = function (category) {
+        var resToDraw = this.resourceManagerHelper.chooseRandomImage(category);
+        if (resToDraw != this.imageOnScreen)
+            this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
+        this.imageOnScreen = resToDraw;
+        var soundToPlay = this.resourceManagerHelper.chooseRandomSound(category);
+        if (!this.configurationMananger.isSoundPlaying())
+            this.actionManager.playSound(soundToPlay, false);
     };
     return PirateState;
 }());
@@ -647,11 +653,7 @@ var PassiveState = (function (_super) {
             this.lookingAroundEmote(time);
     };
     PassiveState.prototype.lookingAroundEmote = function (time) {
-        var resToDraw = this.resourceManagerHelper.chooseRandomImage("lookingAround");
-        this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
-        var soundToPlay = this.resourceManagerHelper.chooseRandomSound("lookingAround");
-        if (!this.configurationMananger.isSoundPlaying())
-            this.actionManager.playSound(soundToPlay, false);
+        this.drawAndPlayRandomResourceByCategory("lookingAround");
     };
     PassiveState.prototype.eatingTick = function (time) {
         if (!this.timerTrigger.isOnGoing("eating")) {
@@ -662,11 +664,7 @@ var PassiveState = (function (_super) {
         this.eatingEmote(time);
     };
     PassiveState.prototype.eatingEmote = function (time) {
-        var resToDraw = this.resourceManagerHelper.chooseRandomImage("eating");
-        this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
-        var soundToPlay = this.resourceManagerHelper.chooseRandomSound("eating");
-        if (!this.configurationMananger.isSoundPlaying())
-            this.actionManager.playSound(soundToPlay, false);
+        this.drawAndPlayRandomResourceByCategory("eating");
     };
     PassiveState.prototype.drinkingTick = function (time) {
         if (!this.timerTrigger.isOnGoing("drinking")) {
@@ -707,11 +705,7 @@ var PassiveState = (function (_super) {
         this.askingForInteractionEmote(time);
     };
     PassiveState.prototype.askingForInteractionEmote = function (time) {
-        var resToDraw = this.resourceManagerHelper.chooseRandomImage("askingForInteraction");
-        this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
-        var soundToPlay = this.resourceManagerHelper.chooseRandomSound("askingForInteraction");
-        if (!this.configurationMananger.isSoundPlaying())
-            this.actionManager.playSound(soundToPlay, false);
+        this.drawAndPlayRandomResourceByCategory("askingForInteraction");
     };
     PassiveState.prototype.doingSomethingStupidTick = function (time) {
         if (!this.timerTrigger.isOnGoing("doingSomethingStupid")) {
@@ -722,11 +716,7 @@ var PassiveState = (function (_super) {
         this.doingSomethingStupidEmote(time);
     };
     PassiveState.prototype.doingSomethingStupidEmote = function (time) {
-        var resToDraw = this.resourceManagerHelper.chooseRandomImage("doingSomethingStupid");
-        this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
-        var soundToPlay = this.resourceManagerHelper.chooseRandomSound("doingSomethingStupid");
-        if (!this.configurationMananger.isSoundPlaying())
-            this.actionManager.playSound(soundToPlay, false);
+        this.drawAndPlayRandomResourceByCategory("doingSomethingStupid");
     };
     PassiveState.prototype.respondsToEventsTick = function (time) {
     };
@@ -856,11 +846,7 @@ var SleepingState = (function (_super) {
         }
     };
     SleepingState.prototype.normalEmote = function (time) {
-        var resToDraw = this.resourceManagerHelper.chooseRandomImage("sleeping-normal");
-        this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
-        var soundToPlay = this.resourceManagerHelper.chooseRandomSound("sleeping-normal");
-        if (!this.configurationMananger.isSoundPlaying())
-            this.actionManager.playSound(soundToPlay, false);
+        this.drawAndPlayRandomResourceByCategory("sleeping-normal");
     };
     SleepingState.prototype.napTick = function (time) {
         if (!this.timerTrigger.isOnGoing("sleep_nap")) {
@@ -871,11 +857,7 @@ var SleepingState = (function (_super) {
         this.napEmote(time);
     };
     SleepingState.prototype.napEmote = function (time) {
-        var resToDraw = this.resourceManagerHelper.chooseRandomImage("sleeping-nap");
-        this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
-        var soundToPlay = this.resourceManagerHelper.chooseRandomSound("sleeping-nap");
-        if (!this.configurationMananger.isSoundPlaying())
-            this.actionManager.playSound(soundToPlay, false);
+        this.drawAndPlayRandomResourceByCategory("sleeping-nap");
     };
     SleepingState.prototype.angryTick = function (time) {
         if (!this.timerTrigger.isOnGoing("angry")) {
@@ -886,11 +868,7 @@ var SleepingState = (function (_super) {
         this.angryEmote(time);
     };
     SleepingState.prototype.angryEmote = function (time) {
-        var resToDraw = this.resourceManagerHelper.chooseRandomImage("angry");
-        this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
-        var soundToPlay = this.resourceManagerHelper.chooseRandomSound("angry");
-        if (!this.configurationMananger.isSoundPlaying())
-            this.actionManager.playSound(soundToPlay, false);
+        this.drawAndPlayRandomResourceByCategory("angry");
     };
     SleepingState.prototype.onBackgroundTick = function (time) {
         this.onTick(time);
@@ -963,11 +941,7 @@ var ActiveState = (function (_super) {
         this.funEmote(time);
     };
     ActiveState.prototype.funEmote = function (time) {
-        var resToDraw = this.resourceManagerHelper.chooseRandomImage("fun");
-        this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
-        var soundToPlay = this.resourceManagerHelper.chooseRandomSound("fun");
-        if (!this.configurationMananger.isSoundPlaying())
-            this.actionManager.playSound(soundToPlay, false);
+        this.drawAndPlayRandomResourceByCategory("fun");
     };
     ActiveState.prototype.onBackgroundTick = function (time) {
         this.onTick(time);

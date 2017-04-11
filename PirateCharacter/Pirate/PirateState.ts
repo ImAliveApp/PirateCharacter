@@ -10,7 +10,7 @@
     protected managersHandler: IManagersHandler;
 
     protected timerTrigger: TimerTriggerSystem;
-
+    protected categoryOnScreen: string;
     protected currentCategoryPlaying: string;
     protected walking: boolean;
 
@@ -27,6 +27,7 @@
     abstract onBackgroundTick(time: number): void;
 
     onStart(handler: IManagersHandler): void {
+        this.categoryOnScreen = "";
         this.walking = false;
         this.actionManager = handler.getActionManager();
         this.resourceManager = handler.getResourceManager();
@@ -78,15 +79,23 @@
             category = AgentConstants.ON_FALLING_LEFT;
         }
 
-        let resToDraw = this.resourceManagerHelper.chooseRandomImage(category);
-        this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
-        let soundToPlay = this.resourceManagerHelper.chooseRandomSound(category);
-        if (!this.configurationMananger.isSoundPlaying())
-            this.actionManager.playSound(soundToPlay, false);
+        this.drawAndPlayRandomResourceByCategory(category);
     }
 
     shouldEventHappen(chance: number): boolean {
         return Math.random() < chance;
+    }
+
+    drawAndPlayRandomResourceByCategory(category: string): void {
+        let resToDraw = this.resourceManagerHelper.chooseRandomImage(category);
+        if (resToDraw != this.categoryOnScreen)
+            this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
+
+        this.categoryOnScreen = category;
+
+        let soundToPlay = this.resourceManagerHelper.chooseRandomSound(category);
+        if (!this.configurationMananger.isSoundPlaying())
+            this.actionManager.playSound(soundToPlay, false);
     }
 }
 
@@ -200,11 +209,7 @@ class PassiveState extends PirateState {
     }
 
     lookingAroundEmote(time: number): void {
-        let resToDraw = this.resourceManagerHelper.chooseRandomImage("lookingAround");
-        this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
-        let soundToPlay = this.resourceManagerHelper.chooseRandomSound("lookingAround");
-        if (!this.configurationMananger.isSoundPlaying())
-            this.actionManager.playSound(soundToPlay, false);
+        this.drawAndPlayRandomResourceByCategory("lookingAround");
     }
 
     eatingTick(time: number): void {
@@ -217,11 +222,7 @@ class PassiveState extends PirateState {
     }
 
     eatingEmote(time: number) {
-        let resToDraw = this.resourceManagerHelper.chooseRandomImage("eating");
-        this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
-        let soundToPlay = this.resourceManagerHelper.chooseRandomSound("eating");
-        if (!this.configurationMananger.isSoundPlaying())
-            this.actionManager.playSound(soundToPlay, false);
+        this.drawAndPlayRandomResourceByCategory("eating");
     }
 
     drinkingTick(time: number): void {
@@ -268,11 +269,7 @@ class PassiveState extends PirateState {
     }
 
     askingForInteractionEmote(time: number): void {
-        let resToDraw = this.resourceManagerHelper.chooseRandomImage("askingForInteraction");
-        this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
-        let soundToPlay = this.resourceManagerHelper.chooseRandomSound("askingForInteraction");
-        if (!this.configurationMananger.isSoundPlaying())
-            this.actionManager.playSound(soundToPlay, false);
+        this.drawAndPlayRandomResourceByCategory("askingForInteraction");
     }
 
     doingSomethingStupidTick(time: number): void {
@@ -285,11 +282,7 @@ class PassiveState extends PirateState {
     }
 
     doingSomethingStupidEmote(time: number): void {
-        let resToDraw = this.resourceManagerHelper.chooseRandomImage("doingSomethingStupid");
-        this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
-        let soundToPlay = this.resourceManagerHelper.chooseRandomSound("doingSomethingStupid");
-        if (!this.configurationMananger.isSoundPlaying())
-            this.actionManager.playSound(soundToPlay, false);
+        this.drawAndPlayRandomResourceByCategory("doingSomethingStupid");
     }
 
     respondsToEventsTick(time: number): void {
@@ -438,11 +431,7 @@ class SleepingState extends PirateState {
     }
 
     normalEmote(time: number): void {
-        let resToDraw = this.resourceManagerHelper.chooseRandomImage("sleeping-normal");
-        this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
-        let soundToPlay = this.resourceManagerHelper.chooseRandomSound("sleeping-normal");
-        if (!this.configurationMananger.isSoundPlaying())
-            this.actionManager.playSound(soundToPlay, false);
+        this.drawAndPlayRandomResourceByCategory("sleeping-normal");
     }
 
     napTick(time: number) {
@@ -456,11 +445,7 @@ class SleepingState extends PirateState {
     }
 
     napEmote(time: number): void {
-        let resToDraw = this.resourceManagerHelper.chooseRandomImage("sleeping-nap");
-        this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
-        let soundToPlay = this.resourceManagerHelper.chooseRandomSound("sleeping-nap");
-        if (!this.configurationMananger.isSoundPlaying())
-            this.actionManager.playSound(soundToPlay, false);
+        this.drawAndPlayRandomResourceByCategory("sleeping-nap");
     }
 
     angryTick(time: number) {
@@ -474,11 +459,7 @@ class SleepingState extends PirateState {
     }
 
     angryEmote(time: number): void {
-        let resToDraw = this.resourceManagerHelper.chooseRandomImage("angry");
-        this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
-        let soundToPlay = this.resourceManagerHelper.chooseRandomSound("angry");
-        if (!this.configurationMananger.isSoundPlaying())
-            this.actionManager.playSound(soundToPlay, false);
+        this.drawAndPlayRandomResourceByCategory("angry");
     }
 
 
@@ -583,11 +564,7 @@ class ActiveState extends PirateState {
     }
 
     funEmote(time: number) {
-        let resToDraw = this.resourceManagerHelper.chooseRandomImage("fun");
-        this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
-        let soundToPlay = this.resourceManagerHelper.chooseRandomSound("fun");
-        if (!this.configurationMananger.isSoundPlaying())
-            this.actionManager.playSound(soundToPlay, false);
+        this.drawAndPlayRandomResourceByCategory("fun");
     }
 
     onBackgroundTick(time: number) {

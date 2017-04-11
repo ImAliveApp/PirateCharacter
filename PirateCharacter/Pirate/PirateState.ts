@@ -82,7 +82,7 @@
         this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
         let soundToPlay = this.resourceManagerHelper.chooseRandomSound(category);
         if (!this.configurationMananger.isSoundPlaying())
-            this.actionManager.playSound(soundToPlay);
+            this.actionManager.playSound(soundToPlay, false);
     }
 
     shouldEventHappen(chance: number): boolean {
@@ -204,7 +204,7 @@ class PassiveState extends PirateState {
         this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
         let soundToPlay = this.resourceManagerHelper.chooseRandomSound("lookingAround");
         if (!this.configurationMananger.isSoundPlaying())
-            this.actionManager.playSound(soundToPlay);
+            this.actionManager.playSound(soundToPlay, false);
     }
 
     eatingTick(time: number): void {
@@ -221,7 +221,7 @@ class PassiveState extends PirateState {
         this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
         let soundToPlay = this.resourceManagerHelper.chooseRandomSound("eating");
         if (!this.configurationMananger.isSoundPlaying())
-            this.actionManager.playSound(soundToPlay);
+            this.actionManager.playSound(soundToPlay, false);
     }
 
     drinkingTick(time: number): void {
@@ -238,7 +238,7 @@ class PassiveState extends PirateState {
         this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
         let soundToPlay = this.resourceManagerHelper.chooseRandomSound("drinking");
         if (!this.configurationMananger.isSoundPlaying())
-            this.actionManager.playSound(soundToPlay);
+            this.actionManager.playSound(soundToPlay, false);
     }
 
     readingTick(time: number): void {
@@ -255,7 +255,7 @@ class PassiveState extends PirateState {
         this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
         let soundToPlay = this.resourceManagerHelper.chooseRandomSound("reading");
         if (!this.configurationMananger.isSoundPlaying())
-            this.actionManager.playSound(soundToPlay);
+            this.actionManager.playSound(soundToPlay, false);
     }
 
     askingForInteractionTick(time: number): void {
@@ -272,7 +272,7 @@ class PassiveState extends PirateState {
         this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
         let soundToPlay = this.resourceManagerHelper.chooseRandomSound("askingForInteraction");
         if (!this.configurationMananger.isSoundPlaying())
-            this.actionManager.playSound(soundToPlay);
+            this.actionManager.playSound(soundToPlay, false);
     }
 
     doingSomethingStupidTick(time: number): void {
@@ -289,7 +289,7 @@ class PassiveState extends PirateState {
         this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
         let soundToPlay = this.resourceManagerHelper.chooseRandomSound("doingSomethingStupid");
         if (!this.configurationMananger.isSoundPlaying())
-            this.actionManager.playSound(soundToPlay);
+            this.actionManager.playSound(soundToPlay, false);
     }
 
     respondsToEventsTick(time: number): void {
@@ -442,7 +442,7 @@ class SleepingState extends PirateState {
         this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
         let soundToPlay = this.resourceManagerHelper.chooseRandomSound("sleeping-normal");
         if (!this.configurationMananger.isSoundPlaying())
-            this.actionManager.playSound(soundToPlay);
+            this.actionManager.playSound(soundToPlay, false);
     }
 
     napTick(time: number) {
@@ -460,7 +460,7 @@ class SleepingState extends PirateState {
         this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
         let soundToPlay = this.resourceManagerHelper.chooseRandomSound("sleeping-nap");
         if (!this.configurationMananger.isSoundPlaying())
-            this.actionManager.playSound(soundToPlay);
+            this.actionManager.playSound(soundToPlay, false);
     }
 
     angryTick(time: number) {
@@ -478,7 +478,7 @@ class SleepingState extends PirateState {
         this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
         let soundToPlay = this.resourceManagerHelper.chooseRandomSound("angry");
         if (!this.configurationMananger.isSoundPlaying())
-            this.actionManager.playSound(soundToPlay);
+            this.actionManager.playSound(soundToPlay, false);
     }
 
 
@@ -587,7 +587,7 @@ class ActiveState extends PirateState {
         this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
         let soundToPlay = this.resourceManagerHelper.chooseRandomSound("fun");
         if (!this.configurationMananger.isSoundPlaying())
-            this.actionManager.playSound(soundToPlay);
+            this.actionManager.playSound(soundToPlay, false);
     }
 
     onBackgroundTick(time: number) {

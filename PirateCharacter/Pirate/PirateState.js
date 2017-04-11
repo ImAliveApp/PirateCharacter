@@ -63,7 +63,7 @@ var PirateState = (function () {
         this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
         var soundToPlay = this.resourceManagerHelper.chooseRandomSound(category);
         if (!this.configurationMananger.isSoundPlaying())
-            this.actionManager.playSound(soundToPlay);
+            this.actionManager.playSound(soundToPlay, false);
     };
     PirateState.prototype.shouldEventHappen = function (chance) {
         return Math.random() < chance;
@@ -204,7 +204,7 @@ var PassiveState = (function (_super) {
         this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
         var soundToPlay = this.resourceManagerHelper.chooseRandomSound("lookingAround");
         if (!this.configurationMananger.isSoundPlaying())
-            this.actionManager.playSound(soundToPlay);
+            this.actionManager.playSound(soundToPlay, false);
     };
     PassiveState.prototype.eatingTick = function (time) {
         if (!this.timerTrigger.isOnGoing("eating")) {
@@ -219,7 +219,7 @@ var PassiveState = (function (_super) {
         this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
         var soundToPlay = this.resourceManagerHelper.chooseRandomSound("eating");
         if (!this.configurationMananger.isSoundPlaying())
-            this.actionManager.playSound(soundToPlay);
+            this.actionManager.playSound(soundToPlay, false);
     };
     PassiveState.prototype.drinkingTick = function (time) {
         if (!this.timerTrigger.isOnGoing("drinking")) {
@@ -234,7 +234,7 @@ var PassiveState = (function (_super) {
         this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
         var soundToPlay = this.resourceManagerHelper.chooseRandomSound("drinking");
         if (!this.configurationMananger.isSoundPlaying())
-            this.actionManager.playSound(soundToPlay);
+            this.actionManager.playSound(soundToPlay, false);
     };
     PassiveState.prototype.readingTick = function (time) {
         if (!this.timerTrigger.isOnGoing("reading")) {
@@ -249,7 +249,7 @@ var PassiveState = (function (_super) {
         this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
         var soundToPlay = this.resourceManagerHelper.chooseRandomSound("reading");
         if (!this.configurationMananger.isSoundPlaying())
-            this.actionManager.playSound(soundToPlay);
+            this.actionManager.playSound(soundToPlay, false);
     };
     PassiveState.prototype.askingForInteractionTick = function (time) {
         if (!this.timerTrigger.isOnGoing("askingForInteraction")) {
@@ -264,7 +264,7 @@ var PassiveState = (function (_super) {
         this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
         var soundToPlay = this.resourceManagerHelper.chooseRandomSound("askingForInteraction");
         if (!this.configurationMananger.isSoundPlaying())
-            this.actionManager.playSound(soundToPlay);
+            this.actionManager.playSound(soundToPlay, false);
     };
     PassiveState.prototype.doingSomethingStupidTick = function (time) {
         if (!this.timerTrigger.isOnGoing("doingSomethingStupid")) {
@@ -279,7 +279,7 @@ var PassiveState = (function (_super) {
         this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
         var soundToPlay = this.resourceManagerHelper.chooseRandomSound("doingSomethingStupid");
         if (!this.configurationMananger.isSoundPlaying())
-            this.actionManager.playSound(soundToPlay);
+            this.actionManager.playSound(soundToPlay, false);
     };
     PassiveState.prototype.respondsToEventsTick = function (time) {
     };
@@ -413,7 +413,7 @@ var SleepingState = (function (_super) {
         this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
         var soundToPlay = this.resourceManagerHelper.chooseRandomSound("sleeping-normal");
         if (!this.configurationMananger.isSoundPlaying())
-            this.actionManager.playSound(soundToPlay);
+            this.actionManager.playSound(soundToPlay, false);
     };
     SleepingState.prototype.napTick = function (time) {
         if (!this.timerTrigger.isOnGoing("sleep_nap")) {
@@ -428,7 +428,7 @@ var SleepingState = (function (_super) {
         this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
         var soundToPlay = this.resourceManagerHelper.chooseRandomSound("sleeping-nap");
         if (!this.configurationMananger.isSoundPlaying())
-            this.actionManager.playSound(soundToPlay);
+            this.actionManager.playSound(soundToPlay, false);
     };
     SleepingState.prototype.angryTick = function (time) {
         if (!this.timerTrigger.isOnGoing("angry")) {
@@ -443,7 +443,7 @@ var SleepingState = (function (_super) {
         this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
         var soundToPlay = this.resourceManagerHelper.chooseRandomSound("angry");
         if (!this.configurationMananger.isSoundPlaying())
-            this.actionManager.playSound(soundToPlay);
+            this.actionManager.playSound(soundToPlay, false);
     };
     SleepingState.prototype.onBackgroundTick = function (time) {
         this.onTick(time);
@@ -520,7 +520,7 @@ var ActiveState = (function (_super) {
         this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
         var soundToPlay = this.resourceManagerHelper.chooseRandomSound("fun");
         if (!this.configurationMananger.isSoundPlaying())
-            this.actionManager.playSound(soundToPlay);
+            this.actionManager.playSound(soundToPlay, false);
     };
     ActiveState.prototype.onBackgroundTick = function (time) {
         this.onTick(time);

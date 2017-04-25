@@ -101,9 +101,6 @@ var AliveClass = (function () {
      * @param viewName The 'Name' property of the view that was pressed.
      */
     AliveClass.prototype.onMenuItemSelected = function (viewName) {
-        if (this.handler.getSpeechToTextManager().isSpeechRecognitionAvailable() && viewName == "speakButton") {
-            this.handler.getSpeechToTextManager().startSpeechRecognition();
-        }
         this.states.getValue(this.currentState).onMenuItemSelected(viewName);
     };
     /**
@@ -163,6 +160,35 @@ var AliveClass = (function () {
         button.TextColor = "#FFFFFF";
         button.BackgroundColor = "#000000";
         button.Name = "speakButton";
+        var button2 = new ButtonMenuItem();
+        button2.InitialX = 0;
+        button2.InitialY = 4;
+        button2.Height = 1;
+        button2.Width = menuBuilder.getMaxColumns();
+        button2.Text = "Let's play!";
+        button2.TextColor = "#FFFFFF";
+        button2.BackgroundColor = "#000000";
+        button2.Name = "playButton";
+        var progressLabel = new TextBoxMenuItem();
+        progressLabel.BackgroundColor = "#000000";
+        progressLabel.TextColor = "#ffffff";
+        progressLabel.InitialX = 0;
+        progressLabel.InitialY = 5;
+        progressLabel.Width = 2;
+        progressLabel.Height = 1;
+        progressLabel.Name = "progressLabel";
+        progressLabel.Text = "Remaining time:";
+        var progress = new ProgressBarMenuItem();
+        progress.InitialX = 2;
+        progress.InitialY = 5;
+        progress.Width = 2;
+        progress.Height = 1;
+        progress.MaxProgress = 100;
+        progress.Name = "progress";
+        progress.Progress = 0;
+        progress.TextColor = "#ffffff";
+        progress.BackgroundColor = "#000000";
+        progress.FrontColor = "#00ff00";
         var picture = new PictureMenuItem();
         picture.InitialX = 0;
         picture.InitialY = 0;
@@ -175,7 +201,10 @@ var AliveClass = (function () {
         menuHeader.BackgroundColor = "#ffff99";
         menuBuilder.createMenuHeader(menuHeader);
         menuBuilder.createButton(button);
+        menuBuilder.createButton(button2);
         menuBuilder.createPicture(picture);
+        menuBuilder.createTextBox(progressLabel);
+        menuBuilder.createProgressBar(progress);
     };
     /**
      * This method gets called when the system done collecting information about nearby places around the device.
@@ -458,6 +487,7 @@ var __extends = (this && this.__extends) || (function () {
 var PirateState = (function () {
     function PirateState(switchContext) {
         this.switchContext = switchContext;
+        this.wordsEvaluator = new WordsEvaluator();
     }
     Object.defineProperty(PirateState, "WALK_TIME", {
         get: function () { return 1000; },
@@ -485,22 +515,25 @@ var PirateState = (function () {
     ;
     PirateState.prototype.onStart = function (handler) {
         var _this = this;
-        this.imageOnScreen = "";
+        this.categoryOnScreen = "";
         this.walking = false;
+        this.managersHandler = handler;
+        this.menuManager = handler.getMenuManager();
         this.actionManager = handler.getActionManager();
         this.resourceManager = handler.getResourceManager();
         this.characterManager = handler.getCharacterManager();
-        this.configurationMananger = handler.getConfigurationManager();
+        this.configurationManager = handler.getConfigurationManager();
+        this.speechToTextManager = handler.getSpeechToTextManager();
         this.resourceManagerHelper = new ResourceManagerHelper(this.resourceManager);
-        this.timerTrigger = new TimerTriggerSystem(function () { return _this.configurationMananger.getCurrentTime().currentTimeMillis; });
+        this.timerTrigger = new TimerTriggerSystem(function () { return _this.configurationManager.getCurrentTime().currentTimeMillis; });
     };
     PirateState.prototype.walkRandomally = function () {
-        var screenWidth = this.configurationMananger.getScreenWidth();
+        var screenWidth = this.configurationManager.getScreenWidth();
         var currentX = this.characterManager.getCurrentCharacterXPosition();
         var distanceToMove = Math.abs(currentX - screenWidth);
         var category = AgentConstants.ON_FALLING_RIGHT;
         this.walking = true;
-        if (this.shouldEventHappen(50) && distanceToMove > screenWidth / 4) {
+        if (this.shouldEventHappen(0.5) && distanceToMove > screenWidth / 4) {
             this.actionManager.move(distanceToMove / 3, 0, PirateState.WALK_TIME);
         }
         else {
@@ -513,12 +546,14 @@ var PirateState = (function () {
         return Math.random() < chance;
     };
     PirateState.prototype.drawAndPlayRandomResourceByCategory = function (category) {
+        if (this.playingMiniGame)
+            return;
         var resToDraw = this.resourceManagerHelper.chooseRandomImage(category);
-        if (resToDraw != this.imageOnScreen)
-            this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
-        this.imageOnScreen = resToDraw;
+        if (resToDraw != this.categoryOnScreen)
+            this.actionManager.draw(resToDraw, this.configurationManager.getMaximalResizeRatio(), false);
+        this.categoryOnScreen = category;
         var soundToPlay = this.resourceManagerHelper.chooseRandomSound(category);
-        if (!this.configurationMananger.isSoundPlaying())
+        if (!this.configurationManager.isSoundPlaying())
             this.actionManager.playSound(soundToPlay, false);
     };
     return PirateState;
@@ -537,7 +572,9 @@ var PassiveSubstate;
 var PassiveState = (function (_super) {
     __extends(PassiveState, _super);
     function PassiveState(switchContext) {
-        return _super.call(this, switchContext) || this;
+        var _this = _super.call(this, switchContext) || this;
+        _this.playingMiniGame = false;
+        return _this;
     }
     Object.defineProperty(PassiveState, "LOOKING_AROUND_CHANGE", {
         get: function () { return 0.1; },
@@ -585,9 +622,14 @@ var PassiveState = (function (_super) {
     };
     PassiveState.prototype.onStart = function (handler) {
         _super.prototype.onStart.call(this, handler);
+        this.lastPlayGameClick = 0;
         this.currentState = PassiveSubstate.LookingAround;
     };
     PassiveState.prototype.onTick = function (time) {
+        if (this.playingMiniGame) {
+            this.miniGame.onTick(time);
+            return;
+        }
         switch (this.currentState) {
             case PassiveSubstate.LookingAround:
                 this.lookingAroundTick(time);
@@ -676,9 +718,9 @@ var PassiveState = (function (_super) {
     };
     PassiveState.prototype.drinkingEmote = function (time) {
         var resToDraw = this.resourceManagerHelper.chooseRandomImage("drinking");
-        this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
+        this.actionManager.draw(resToDraw, this.configurationManager.getMaximalResizeRatio(), false);
         var soundToPlay = this.resourceManagerHelper.chooseRandomSound("drinking");
-        if (!this.configurationMananger.isSoundPlaying())
+        if (!this.configurationManager.isSoundPlaying())
             this.actionManager.playSound(soundToPlay, false);
     };
     PassiveState.prototype.readingTick = function (time) {
@@ -691,9 +733,9 @@ var PassiveState = (function (_super) {
     };
     PassiveState.prototype.readingEmote = function (time) {
         var resToDraw = this.resourceManagerHelper.chooseRandomImage("reading");
-        this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
+        this.actionManager.draw(resToDraw, this.configurationManager.getMaximalResizeRatio(), false);
         var soundToPlay = this.resourceManagerHelper.chooseRandomSound("reading");
-        if (!this.configurationMananger.isSoundPlaying())
+        if (!this.configurationManager.isSoundPlaying())
             this.actionManager.playSound(soundToPlay, false);
     };
     PassiveState.prototype.askingForInteractionTick = function (time) {
@@ -743,13 +785,40 @@ var PassiveState = (function (_super) {
     PassiveState.prototype.onMove = function (oldX, oldY, newX, newY) {
     };
     PassiveState.prototype.onRelease = function (currentX, currentY) {
-        var screenHeight = this.configurationMananger.getScreenHeight();
+        var screenHeight = this.configurationManager.getScreenHeight();
         if (currentY < screenHeight - 50)
             this.actionManager.move(0, screenHeight, 0);
     };
     PassiveState.prototype.onPick = function (currentX, currentY) {
+        if (this.playingMiniGame) {
+            this.miniGame.onEventOccured("touch");
+        }
+        else {
+            this.actionManager.stopSound();
+            this.currentState = PassiveSubstate.LookingAround;
+        }
     };
     PassiveState.prototype.onMenuItemSelected = function (itemName) {
+        switch (itemName) {
+            case "speakButton":
+                if (!this.speechToTextManager.isSpeechRecognitionAvailable() || this.playingMiniGame)
+                    return;
+                this.speechToTextManager.stopSpeechRecognition();
+                this.speechToTextManager.startSpeechRecognition();
+                break;
+            case "playButton":
+                if (this.playingMiniGame) {
+                    this.miniGame.onEventOccured("stop");
+                }
+                else {
+                    var now = this.configurationManager.getCurrentTime().currentTimeMillis;
+                    if (now - this.lastPlayGameClick < 2000)
+                        return;
+                    this.lastPlayGameClick = now;
+                    this.playRandomMiniGame();
+                }
+                break;
+        }
     };
     PassiveState.prototype.onResponseReceived = function (response) {
     };
@@ -763,14 +832,40 @@ var PassiveState = (function (_super) {
     };
     PassiveState.prototype.onConfigureMenuItems = function (menuBuilder) { };
     PassiveState.prototype.onSpeechRecognitionResults = function (results) {
-        if (results.indexOf("quite") != -1 || results.indexOf("shut") != -1
-            || results.indexOf("stupid") != -1 || results.indexOf("fuck") != -1) {
+        if (this.wordsEvaluator.containsBadWord(results) && !this.playingMiniGame) {
             this.actionManager.stopSound();
             this.currentState = PassiveSubstate.AskingForInteraction;
             this.timerTrigger.set("askingForInteraction", PassiveState.ASKING_FOR_INTERACTION_TIME);
         }
     };
     PassiveState.prototype.onPlacesReceived = function (places) { };
+    PassiveState.prototype.playRandomMiniGame = function () {
+        var _this = this;
+        if (this.playingMiniGame)
+            return;
+        if (this.shouldEventHappen(0.6)) {
+            this.actionManager.showMessage("I don't want to play right now..", "#4C4D4F", "#ffffff", 2000);
+            return;
+        }
+        this.menuManager.setProperty("playButton", "Text", "Surrender");
+        this.playingMiniGame = true;
+        this.miniGame = new HideAndSeekMiniGame(this.managersHandler, function (playerWon) {
+            _this.actionManager.move(-Number.MAX_VALUE, _this.configurationManager.getScreenHeight(), 20);
+            _this.actionManager.animateAlpha(1, 200);
+            _this.playingMiniGame = false;
+            if (playerWon) {
+                _this.actionManager.draw("pirate__laughing.png", _this.configurationManager.getMaximalResizeRatio(), false);
+                _this.actionManager.showMessage("Great job! you won! i'll get you next time! :D", "#91CA63", "#ffffff", 5000);
+            }
+            else {
+                _this.actionManager.draw("laughing-ha.png", _this.configurationManager.getMaximalResizeRatio(), false);
+                _this.actionManager.showMessage("Haha, i won! are you ready to lose again? :D", "#EC2027", "#ffffff", 5000);
+            }
+            _this.menuManager.setProperty("playButton", "Text", "Let's play!");
+            _this.menuManager.setProperty("progress", "progress", "0");
+        });
+        this.miniGame.onStart(this.configurationManager.getCurrentTime().currentTimeMillis);
+    };
     return PassiveState;
 }(PirateState));
 var SleepingSubstate;
@@ -817,7 +912,7 @@ var SleepingState = (function (_super) {
         this.currentState = SleepingSubstate.Normal;
     };
     SleepingState.prototype.onTick = function (time) {
-        var now = this.configurationMananger.getCurrentTime();
+        var now = this.configurationManager.getCurrentTime();
         if (now.Hour < 22 && now.Hour > 8) {
             this.switchContext.switchTo(PirateState.PASSIVE);
             this.actionManager.stopSound();
@@ -836,7 +931,7 @@ var SleepingState = (function (_super) {
         }
     };
     SleepingState.prototype.normalTick = function (time) {
-        if (!this.configurationMananger.isSoundPlaying()) {
+        if (!this.configurationManager.isSoundPlaying()) {
             this.normalEmote(time);
         }
         if (this.shouldEventHappen(0.25)) {
@@ -885,11 +980,13 @@ var SleepingState = (function (_super) {
     SleepingState.prototype.onMove = function (oldX, oldY, newX, newY) {
     };
     SleepingState.prototype.onRelease = function (currentX, currentY) {
-        var screenHeight = this.configurationMananger.getScreenHeight();
+        var screenHeight = this.configurationManager.getScreenHeight();
         if (currentY < screenHeight - 50)
             this.actionManager.move(0, screenHeight, 0);
     };
     SleepingState.prototype.onPick = function (currentX, currentY) {
+        this.actionManager.stopSound();
+        this.currentState = SleepingSubstate.Normal;
     };
     SleepingState.prototype.onMenuItemSelected = function (itemName) {
     };
@@ -954,7 +1051,7 @@ var ActiveState = (function (_super) {
     ActiveState.prototype.onMove = function (oldX, oldY, newX, newY) {
     };
     ActiveState.prototype.onRelease = function (currentX, currentY) {
-        var screenHeight = this.configurationMananger.getScreenHeight();
+        var screenHeight = this.configurationManager.getScreenHeight();
         if (currentY < screenHeight - 50)
             this.actionManager.move(0, screenHeight, 0);
     };
@@ -995,6 +1092,24 @@ var TimerTriggerSystem = (function () {
     return TimerTriggerSystem;
 }());
 //# sourceMappingURL=TimerTriggerSystem.js.map
+var WordsEvaluator = (function () {
+    function WordsEvaluator() {
+    }
+    WordsEvaluator.prototype.containsBadWord = function (sentence) {
+        sentence = sentence.toLowerCase();
+        return this.hasWord(sentence, "shut") || this.hasWord(sentence, "fuck") || this.hasWord(sentence, "bitch")
+            || this.hasWord(sentence, "stupid") || this.hasWord(sentence, "idiot") || this.hasWord(sentence, "assbite")
+            || this.hasWord(sentence, "jerk") || this.hasWord(sentence, "suck") || this.hasWord(sentence, "sucker")
+            || this.hasWord(sentence, "gay") || this.hasWord(sentence, "cock") || this.hasWord(sentence, "vagina")
+            || this.hasWord(sentence, "junkey") || this.hasWord(sentence, "pig") || this.hasWord(sentence, "arse")
+            || this.hasWord(sentence, "bastard") || this.hasWord(sentence, "whore") || this.hasWord(sentence, "cunt");
+    };
+    WordsEvaluator.prototype.hasWord = function (sentence, word) {
+        return sentence.indexOf(word) != -1;
+    };
+    return WordsEvaluator;
+}());
+//# sourceMappingURL=WordsEvaluator.js.map
 // Copyright 2013 Basarat Ali Syed. All Rights Reserved.
 //
 // Licensed under MIT open source license http://opensource.org/licenses/MIT
@@ -3595,14 +3710,6 @@ var ViewType = (function () {
     return ViewType;
 }());
 //# sourceMappingURL=ViewType.js.map
-//# sourceMappingURL=IBaseMenuItem.js.map
-//# sourceMappingURL=IButtonMenuItem.js.map
-//# sourceMappingURL=ICheckBoxMenuItem.js.map
-//# sourceMappingURL=IMenuHeader.js.map
-//# sourceMappingURL=IPaintMenuItem.js.map
-//# sourceMappingURL=IPictureMenuItem.js.map
-//# sourceMappingURL=IProgressBarMenuItem.js.map
-//# sourceMappingURL=ITextBoxMenuItem.js.map
 //# sourceMappingURL=IAliveLatLng.js.map
 //# sourceMappingURL=IAliveLatLngBounds.js.map
 //# sourceMappingURL=IAliveLocation.js.map
@@ -4249,3 +4356,109 @@ var PlaceType = (function () {
     return PlaceType;
 }());
 //# sourceMappingURL=PlaceType.js.map
+//# sourceMappingURL=IBaseMenuItem.js.map
+//# sourceMappingURL=IButtonMenuItem.js.map
+//# sourceMappingURL=ICheckBoxMenuItem.js.map
+//# sourceMappingURL=IMenuHeader.js.map
+//# sourceMappingURL=IPaintMenuItem.js.map
+//# sourceMappingURL=IPictureMenuItem.js.map
+//# sourceMappingURL=IProgressBarMenuItem.js.map
+//# sourceMappingURL=ITextBoxMenuItem.js.map
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var MiniGame = (function () {
+    function MiniGame() {
+    }
+    return MiniGame;
+}());
+var HideAndSeekMiniGame = (function (_super) {
+    __extends(HideAndSeekMiniGame, _super);
+    function HideAndSeekMiniGame(handler, finishCallback) {
+        var _this = _super.call(this) || this;
+        _this.menuManager = handler.getMenuManager();
+        _this.actionManager = handler.getActionManager();
+        _this.characterManager = handler.getCharacterManager();
+        _this.configurationManager = handler.getConfigurationManager();
+        _this.finishCallback = finishCallback;
+        return _this;
+    }
+    /**
+     * This method gets called once when the user clicks on the 'Lets play' button in the Menu.
+     * We use this method to initiate the game and display an explanation about it, so the user will know what to do.
+     * @param currentTime The current system time.
+     */
+    HideAndSeekMiniGame.prototype.onStart = function (currentTime) {
+        this.catches = 0;
+        this.goalCatches = Math.floor(Math.random() * 20) + 1;
+        this.gameTime = Math.floor(this.goalCatches * Math.random() * 10) + 5;
+        this.actionManager.draw("laughing-ha.png", this.configurationManager.getMaximalResizeRatio(), false);
+        this.actionManager.showMessage("This is a hide and seek game! i will hide, and your job is to catch me "
+            + this.goalCatches + " times in "
+            + this.gameTime
+            + " seconds! :D \n(The phone will vibrate everytime you catch me)", "#6599FF", "#ffffff", 10000);
+        this.menuManager.setProperty("progress", "maxprogress", this.gameTime.toString());
+        this.menuManager.setProperty("progress", "progress", this.gameTime.toString());
+        this.startTime = currentTime;
+        this.gameStartTime = this.startTime + 10000;
+    };
+    HideAndSeekMiniGame.prototype.onTick = function (currentTime) {
+        if (currentTime > this.gameStartTime) {
+            this.actionManager.animateAlpha(0, 50);
+            this.updateProgress(currentTime);
+            this.moveToRandomLocation(currentTime);
+        }
+        else {
+            this.catches = 0;
+        }
+        if (currentTime - this.startTime > this.gameTime * 1000) {
+            this.finishCallback(false);
+        }
+    };
+    HideAndSeekMiniGame.prototype.updateProgress = function (currentTime) {
+        var ongoingTime = currentTime - this.gameStartTime;
+        var remainingTime = 60 - ongoingTime / 1000;
+        if (remainingTime < 20)
+            this.menuManager.setProperty("progress", "frontcolor", "#EC2027");
+        else if (remainingTime < 40)
+            this.menuManager.setProperty("progress", "frontcolor", "#E59400");
+        this.menuManager.setProperty("progress", "Progress", remainingTime.toString());
+    };
+    HideAndSeekMiniGame.prototype.moveToRandomLocation = function (currentTime) {
+        var randomX = Math.floor(Math.random() * this.configurationManager.getScreenWidth());
+        var randomY = Math.floor(Math.random() * this.configurationManager.getScreenHeight());
+        var currentX = this.characterManager.getCurrentCharacterXPosition();
+        var currentY = this.characterManager.getCurrentCharacterYPosition();
+        var disX = Math.abs(currentX - randomX);
+        var disY = Math.abs(currentY - randomY);
+        var moveX = currentX > randomX ? -disX : disX;
+        var moveY = currentY > randomY ? -disY : disY;
+        this.actionManager.move(moveX, moveY, 20);
+    };
+    HideAndSeekMiniGame.prototype.onEventOccured = function (eventName) {
+        switch (eventName) {
+            case "touch":
+                this.catches++;
+                this.actionManager.showSystemMessage("catches: " + this.catches.toString());
+                this.actionManager.vibrate(250);
+                if (this.catches >= this.goalCatches) {
+                    this.finishCallback(true);
+                    return;
+                }
+                break;
+            case "stop":
+                if (this.configurationManager.getCurrentTime().currentTimeMillis - this.gameStartTime > 0)
+                    this.finishCallback(false);
+                break;
+        }
+    };
+    return HideAndSeekMiniGame;
+}(MiniGame));
+//# sourceMappingURL=MiniGame.js.map

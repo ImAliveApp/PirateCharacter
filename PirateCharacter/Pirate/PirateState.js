@@ -11,6 +11,7 @@ var __extends = (this && this.__extends) || (function () {
 var PirateState = (function () {
     function PirateState(switchContext) {
         this.switchContext = switchContext;
+        this.wordsEvaluator = new WordsEvaluator();
     }
     Object.defineProperty(PirateState, "WALK_TIME", {
         get: function () { return 1000; },
@@ -40,20 +41,23 @@ var PirateState = (function () {
         var _this = this;
         this.categoryOnScreen = "";
         this.walking = false;
+        this.managersHandler = handler;
+        this.menuManager = handler.getMenuManager();
         this.actionManager = handler.getActionManager();
         this.resourceManager = handler.getResourceManager();
         this.characterManager = handler.getCharacterManager();
-        this.configurationMananger = handler.getConfigurationManager();
+        this.configurationManager = handler.getConfigurationManager();
+        this.speechToTextManager = handler.getSpeechToTextManager();
         this.resourceManagerHelper = new ResourceManagerHelper(this.resourceManager);
-        this.timerTrigger = new TimerTriggerSystem(function () { return _this.configurationMananger.getCurrentTime().currentTimeMillis; });
+        this.timerTrigger = new TimerTriggerSystem(function () { return _this.configurationManager.getCurrentTime().currentTimeMillis; });
     };
     PirateState.prototype.walkRandomally = function () {
-        var screenWidth = this.configurationMananger.getScreenWidth();
+        var screenWidth = this.configurationManager.getScreenWidth();
         var currentX = this.characterManager.getCurrentCharacterXPosition();
         var distanceToMove = Math.abs(currentX - screenWidth);
         var category = AgentConstants.ON_FALLING_RIGHT;
         this.walking = true;
-        if (this.shouldEventHappen(50) && distanceToMove > screenWidth / 4) {
+        if (this.shouldEventHappen(0.5) && distanceToMove > screenWidth / 4) {
             this.actionManager.move(distanceToMove / 3, 0, PirateState.WALK_TIME);
         }
         else {
@@ -66,12 +70,14 @@ var PirateState = (function () {
         return Math.random() < chance;
     };
     PirateState.prototype.drawAndPlayRandomResourceByCategory = function (category) {
+        if (this.playingMiniGame)
+            return;
         var resToDraw = this.resourceManagerHelper.chooseRandomImage(category);
         if (resToDraw != this.categoryOnScreen)
-            this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
+            this.actionManager.draw(resToDraw, this.configurationManager.getMaximalResizeRatio(), false);
         this.categoryOnScreen = category;
         var soundToPlay = this.resourceManagerHelper.chooseRandomSound(category);
-        if (!this.configurationMananger.isSoundPlaying())
+        if (!this.configurationManager.isSoundPlaying())
             this.actionManager.playSound(soundToPlay, false);
     };
     return PirateState;
@@ -90,7 +96,9 @@ var PassiveSubstate;
 var PassiveState = (function (_super) {
     __extends(PassiveState, _super);
     function PassiveState(switchContext) {
-        return _super.call(this, switchContext) || this;
+        var _this = _super.call(this, switchContext) || this;
+        _this.playingMiniGame = false;
+        return _this;
     }
     Object.defineProperty(PassiveState, "LOOKING_AROUND_CHANGE", {
         get: function () { return 0.1; },
@@ -138,9 +146,14 @@ var PassiveState = (function (_super) {
     };
     PassiveState.prototype.onStart = function (handler) {
         _super.prototype.onStart.call(this, handler);
+        this.lastPlayGameClick = 0;
         this.currentState = PassiveSubstate.LookingAround;
     };
     PassiveState.prototype.onTick = function (time) {
+        if (this.playingMiniGame) {
+            this.miniGame.onTick(time);
+            return;
+        }
         switch (this.currentState) {
             case PassiveSubstate.LookingAround:
                 this.lookingAroundTick(time);
@@ -229,9 +242,9 @@ var PassiveState = (function (_super) {
     };
     PassiveState.prototype.drinkingEmote = function (time) {
         var resToDraw = this.resourceManagerHelper.chooseRandomImage("drinking");
-        this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
+        this.actionManager.draw(resToDraw, this.configurationManager.getMaximalResizeRatio(), false);
         var soundToPlay = this.resourceManagerHelper.chooseRandomSound("drinking");
-        if (!this.configurationMananger.isSoundPlaying())
+        if (!this.configurationManager.isSoundPlaying())
             this.actionManager.playSound(soundToPlay, false);
     };
     PassiveState.prototype.readingTick = function (time) {
@@ -244,9 +257,9 @@ var PassiveState = (function (_super) {
     };
     PassiveState.prototype.readingEmote = function (time) {
         var resToDraw = this.resourceManagerHelper.chooseRandomImage("reading");
-        this.actionManager.draw(resToDraw, this.configurationMananger.getMaximalResizeRatio(), false);
+        this.actionManager.draw(resToDraw, this.configurationManager.getMaximalResizeRatio(), false);
         var soundToPlay = this.resourceManagerHelper.chooseRandomSound("reading");
-        if (!this.configurationMananger.isSoundPlaying())
+        if (!this.configurationManager.isSoundPlaying())
             this.actionManager.playSound(soundToPlay, false);
     };
     PassiveState.prototype.askingForInteractionTick = function (time) {
@@ -296,13 +309,40 @@ var PassiveState = (function (_super) {
     PassiveState.prototype.onMove = function (oldX, oldY, newX, newY) {
     };
     PassiveState.prototype.onRelease = function (currentX, currentY) {
-        var screenHeight = this.configurationMananger.getScreenHeight();
+        var screenHeight = this.configurationManager.getScreenHeight();
         if (currentY < screenHeight - 50)
             this.actionManager.move(0, screenHeight, 0);
     };
     PassiveState.prototype.onPick = function (currentX, currentY) {
+        if (this.playingMiniGame) {
+            this.miniGame.onEventOccured("touch");
+        }
+        else {
+            this.actionManager.stopSound();
+            this.currentState = PassiveSubstate.LookingAround;
+        }
     };
     PassiveState.prototype.onMenuItemSelected = function (itemName) {
+        switch (itemName) {
+            case "speakButton":
+                if (!this.speechToTextManager.isSpeechRecognitionAvailable() || this.playingMiniGame)
+                    return;
+                this.speechToTextManager.stopSpeechRecognition();
+                this.speechToTextManager.startSpeechRecognition();
+                break;
+            case "playButton":
+                if (this.playingMiniGame) {
+                    this.miniGame.onEventOccured("stop");
+                }
+                else {
+                    var now = this.configurationManager.getCurrentTime().currentTimeMillis;
+                    if (now - this.lastPlayGameClick < 2000)
+                        return;
+                    this.lastPlayGameClick = now;
+                    this.playRandomMiniGame();
+                }
+                break;
+        }
     };
     PassiveState.prototype.onResponseReceived = function (response) {
     };
@@ -316,14 +356,40 @@ var PassiveState = (function (_super) {
     };
     PassiveState.prototype.onConfigureMenuItems = function (menuBuilder) { };
     PassiveState.prototype.onSpeechRecognitionResults = function (results) {
-        if (results.indexOf("quite") != -1 || results.indexOf("shut") != -1
-            || results.indexOf("stupid") != -1 || results.indexOf("fuck") != -1) {
+        if (this.wordsEvaluator.containsBadWord(results) && !this.playingMiniGame) {
             this.actionManager.stopSound();
             this.currentState = PassiveSubstate.AskingForInteraction;
             this.timerTrigger.set("askingForInteraction", PassiveState.ASKING_FOR_INTERACTION_TIME);
         }
     };
     PassiveState.prototype.onPlacesReceived = function (places) { };
+    PassiveState.prototype.playRandomMiniGame = function () {
+        var _this = this;
+        if (this.playingMiniGame)
+            return;
+        if (this.shouldEventHappen(0.6)) {
+            this.actionManager.showMessage("I don't want to play right now..", "#4C4D4F", "#ffffff", 2000);
+            return;
+        }
+        this.menuManager.setProperty("playButton", "Text", "Surrender");
+        this.playingMiniGame = true;
+        this.miniGame = new HideAndSeekMiniGame(this.managersHandler, function (playerWon) {
+            _this.actionManager.move(-Number.MAX_VALUE, _this.configurationManager.getScreenHeight(), 20);
+            _this.actionManager.animateAlpha(1, 200);
+            _this.playingMiniGame = false;
+            if (playerWon) {
+                _this.actionManager.draw("pirate__laughing.png", _this.configurationManager.getMaximalResizeRatio(), false);
+                _this.actionManager.showMessage("Great job! you won! i'll get you next time! :D", "#91CA63", "#ffffff", 5000);
+            }
+            else {
+                _this.actionManager.draw("laughing-ha.png", _this.configurationManager.getMaximalResizeRatio(), false);
+                _this.actionManager.showMessage("Haha, i won! are you ready to lose again? :D", "#EC2027", "#ffffff", 5000);
+            }
+            _this.menuManager.setProperty("playButton", "Text", "Let's play!");
+            _this.menuManager.setProperty("progress", "progress", "0");
+        });
+        this.miniGame.onStart(this.configurationManager.getCurrentTime().currentTimeMillis);
+    };
     return PassiveState;
 }(PirateState));
 var SleepingSubstate;
@@ -370,7 +436,7 @@ var SleepingState = (function (_super) {
         this.currentState = SleepingSubstate.Normal;
     };
     SleepingState.prototype.onTick = function (time) {
-        var now = this.configurationMananger.getCurrentTime();
+        var now = this.configurationManager.getCurrentTime();
         if (now.Hour < 22 && now.Hour > 8) {
             this.switchContext.switchTo(PirateState.PASSIVE);
             this.actionManager.stopSound();
@@ -389,7 +455,7 @@ var SleepingState = (function (_super) {
         }
     };
     SleepingState.prototype.normalTick = function (time) {
-        if (!this.configurationMananger.isSoundPlaying()) {
+        if (!this.configurationManager.isSoundPlaying()) {
             this.normalEmote(time);
         }
         if (this.shouldEventHappen(0.25)) {
@@ -438,11 +504,13 @@ var SleepingState = (function (_super) {
     SleepingState.prototype.onMove = function (oldX, oldY, newX, newY) {
     };
     SleepingState.prototype.onRelease = function (currentX, currentY) {
-        var screenHeight = this.configurationMananger.getScreenHeight();
+        var screenHeight = this.configurationManager.getScreenHeight();
         if (currentY < screenHeight - 50)
             this.actionManager.move(0, screenHeight, 0);
     };
     SleepingState.prototype.onPick = function (currentX, currentY) {
+        this.actionManager.stopSound();
+        this.currentState = SleepingSubstate.Normal;
     };
     SleepingState.prototype.onMenuItemSelected = function (itemName) {
     };
@@ -507,7 +575,7 @@ var ActiveState = (function (_super) {
     ActiveState.prototype.onMove = function (oldX, oldY, newX, newY) {
     };
     ActiveState.prototype.onRelease = function (currentX, currentY) {
-        var screenHeight = this.configurationMananger.getScreenHeight();
+        var screenHeight = this.configurationManager.getScreenHeight();
         if (currentY < screenHeight - 50)
             this.actionManager.move(0, screenHeight, 0);
     };

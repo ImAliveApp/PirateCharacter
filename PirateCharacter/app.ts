@@ -119,10 +119,6 @@ class AliveClass implements IAliveAgent, IStateSwitchable {
      * @param viewName The 'Name' property of the view that was pressed.
      */
     onMenuItemSelected(viewName: string): void {
-        if (this.handler.getSpeechToTextManager().isSpeechRecognitionAvailable() && viewName == "speakButton") {
-            this.handler.getSpeechToTextManager().startSpeechRecognition();
-        }
-
         this.states.getValue(this.currentState).onMenuItemSelected(viewName);
     }
 
@@ -190,6 +186,38 @@ class AliveClass implements IAliveAgent, IStateSwitchable {
         button.BackgroundColor = "#000000";
         button.Name = "speakButton";      
 
+        let button2 = new ButtonMenuItem();
+        button2.InitialX = 0;
+        button2.InitialY = 4;
+        button2.Height = 1;
+        button2.Width = menuBuilder.getMaxColumns();
+        button2.Text = "Let's play!";
+        button2.TextColor = "#FFFFFF";
+        button2.BackgroundColor = "#000000";
+        button2.Name = "playButton"; 
+
+        let progressLabel = new TextBoxMenuItem();
+        progressLabel.BackgroundColor = "#000000";
+        progressLabel.TextColor = "#ffffff";
+        progressLabel.InitialX = 0;
+        progressLabel.InitialY = 5;
+        progressLabel.Width = 2;
+        progressLabel.Height = 1;
+        progressLabel.Name = "progressLabel";
+        progressLabel.Text = "Remaining time:";
+
+        let progress = new ProgressBarMenuItem();
+        progress.InitialX = 2;
+        progress.InitialY = 5;
+        progress.Width = 2;
+        progress.Height = 1;
+        progress.MaxProgress = 100;
+        progress.Name = "progress";
+        progress.Progress = 0;
+        progress.TextColor = "#ffffff";
+        progress.BackgroundColor = "#000000";
+        progress.FrontColor = "#00ff00";
+
         let picture = new PictureMenuItem();
         picture.InitialX = 0;
         picture.InitialY = 0;
@@ -204,7 +232,10 @@ class AliveClass implements IAliveAgent, IStateSwitchable {
 
         menuBuilder.createMenuHeader(menuHeader);
         menuBuilder.createButton(button);
+        menuBuilder.createButton(button2);
         menuBuilder.createPicture(picture);
+        menuBuilder.createTextBox(progressLabel);
+        menuBuilder.createProgressBar(progress);
     }
 
     /**

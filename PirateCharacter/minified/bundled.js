@@ -428,19 +428,19 @@ var ResourceManagerHelper = (function () {
             dict.setValue(categoryName, newSet);
         }
     };
-    ResourceManagerHelper.prototype.chooseRandomImage = function (state) {
-        var randomIndex = this.getRandomIndex(state, this.imageResources.getValue(state));
+    ResourceManagerHelper.prototype.chooseRandomImage = function (categoryName) {
+        var randomIndex = this.getRandomIndex(this.imageResources.getValue(categoryName));
         if (randomIndex < 0)
             return null;
-        return this.imageResources.getValue(state)[randomIndex].getResourceName();
+        return this.imageResources.getValue(categoryName)[randomIndex].getResourceName();
     };
-    ResourceManagerHelper.prototype.chooseRandomSound = function (state) {
-        var randomIndex = this.getRandomIndex(state, this.soundResources.getValue(state));
+    ResourceManagerHelper.prototype.chooseRandomSound = function (categoryName) {
+        var randomIndex = this.getRandomIndex(this.soundResources.getValue(categoryName));
         if (randomIndex < 0)
             return null;
-        return this.soundResources.getValue(state)[randomIndex].getResourceName();
+        return this.soundResources.getValue(categoryName)[randomIndex].getResourceName();
     };
-    ResourceManagerHelper.prototype.getRandomIndex = function (state, list) {
+    ResourceManagerHelper.prototype.getRandomIndex = function (list) {
         var index = -1;
         if (list == null)
             return index;
@@ -3109,6 +3109,14 @@ var ViewType = (function () {
     return ViewType;
 }());
 //# sourceMappingURL=ViewType.js.map
+//# sourceMappingURL=IBaseMenuItem.js.map
+//# sourceMappingURL=IButtonMenuItem.js.map
+//# sourceMappingURL=ICheckBoxMenuItem.js.map
+//# sourceMappingURL=IMenuHeader.js.map
+//# sourceMappingURL=IPaintMenuItem.js.map
+//# sourceMappingURL=IPictureMenuItem.js.map
+//# sourceMappingURL=IProgressBarMenuItem.js.map
+//# sourceMappingURL=ITextBoxMenuItem.js.map
 //# sourceMappingURL=IAliveLatLng.js.map
 //# sourceMappingURL=IAliveLatLngBounds.js.map
 //# sourceMappingURL=IAliveLocation.js.map
@@ -3755,14 +3763,6 @@ var PlaceType = (function () {
     return PlaceType;
 }());
 //# sourceMappingURL=PlaceType.js.map
-//# sourceMappingURL=IBaseMenuItem.js.map
-//# sourceMappingURL=IButtonMenuItem.js.map
-//# sourceMappingURL=ICheckBoxMenuItem.js.map
-//# sourceMappingURL=IMenuHeader.js.map
-//# sourceMappingURL=IPaintMenuItem.js.map
-//# sourceMappingURL=IPictureMenuItem.js.map
-//# sourceMappingURL=IProgressBarMenuItem.js.map
-//# sourceMappingURL=ITextBoxMenuItem.js.map
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -3803,7 +3803,7 @@ var HideAndSeekMiniGame = (function (_super) {
         this.actionManager.showMessage("This is a hide and seek game! i will hide, and your job is to catch me "
             + this.goalCatches + " times in "
             + this.gameTime
-            + " seconds! :D \n(The phone will vibrate everytime you catch me)", "#6599FF", "#ffffff", 10000);
+            + " seconds! :D \nThe phone will vibrate everytime you catch me", "#6599FF", "#ffffff", 10000);
         this.menuManager.setProperty("progress", "maxprogress", this.gameTime.toString());
         this.menuManager.setProperty("progress", "progress", this.gameTime.toString());
         this.startTime = currentTime;
@@ -3891,10 +3891,10 @@ var ReflexMiniGame = (function (_super) {
         this.dancingTime = 0;
         this.currentDrawable = "breathing.png";
         this.difficulty = Math.random() * 100;
-        var difficultyTrimmed = this.difficulty.toString().substring(0, 3);
+        var difficultyTrimmed = this.difficulty.toString().substring(0, 4);
         this.actionManager.draw("laughing-ha.png", this.configurationManager.getMaximalResizeRatio(), false);
         //Displaying an explainer message for 10 seconds.
-        this.actionManager.showMessage("This is a reflex game! i will walk around the screen, and you will need to touch me ,but ONLY while i dance! :D "
+        this.actionManager.showMessage("This is a reflex game! i will walk around the screen, and you will need to touch me ,but ONLY while i DANCE! :D "
             + "\nOnce the progress bar in the menu will reach 100%, you will win! but if it reaches 0%... i will win! :D"
             + "\nThe phone will vibrate everytime you do it incorrectly"
             + "\nDifficulty: " + difficultyTrimmed, "#6599FF", "#ffffff", 10000);
@@ -3937,7 +3937,7 @@ var ReflexMiniGame = (function (_super) {
         this.menuManager.setProperty("progress", "Progress", this.progress.toString());
     };
     ReflexMiniGame.prototype.moveToRandomLocation = function (currentTime) {
-        var randomMove = Math.floor(Math.random() * this.difficulty * 50) - Math.floor(Math.random() * this.difficulty * 50); //move the x,y in a number between(-difficulty * 50, +difficulty * 50)
+        var randomMove = Math.floor(Math.random() * this.difficulty * 30) - Math.floor(Math.random() * this.difficulty * 30); //move the x,y in a number between(-difficulty * 30, +difficulty * 30)
         this.actionManager.move(randomMove, randomMove, 250);
     };
     ReflexMiniGame.prototype.maybeDance = function (currentTime) {
@@ -3986,6 +3986,106 @@ var ReflexMiniGame = (function (_super) {
         this.currentDrawable = "breathing.png";
     };
     return ReflexMiniGame;
+}(MiniGame));
+var CatchMiniGame = (function (_super) {
+    __extends(CatchMiniGame, _super);
+    function CatchMiniGame(handler, resourceHelper, finishCallback) {
+        var _this = _super.call(this) || this;
+        _this.menuManager = handler.getMenuManager();
+        _this.actionManager = handler.getActionManager();
+        _this.characterManager = handler.getCharacterManager();
+        _this.configurationManager = handler.getConfigurationManager();
+        _this.resourceHelper = resourceHelper;
+        _this.finishCallback = finishCallback;
+        return _this;
+    }
+    /**
+     * This method gets called once when the user clicks on the 'Lets play' button in the Menu.
+     * We use this method to initiate the game and display an explanation about it, so the user will know what to do.
+     * @param currentTime The current system time.
+     */
+    CatchMiniGame.prototype.onStart = function (currentTime) {
+        this.lastDecreaseTime = currentTime;
+        this.touches = 1;
+        this.progress = 50;
+        this.difficulty = Math.random() * 100;
+        var difficultyTrimmed = this.difficulty.toString().substring(0, 4);
+        this.actionManager.draw("laughing-ha.png", this.configurationManager.getMaximalResizeRatio(), false);
+        //Displaying an explainer message for 10 seconds.
+        this.actionManager.showMessage("This is a catch game! i will walk around the screen, and you will need to catch me :D "
+            + "\nOnce the progress bar in the menu will reach 100%, you will win! but if it reaches 0%... i will win! :D"
+            + "\nThe phone will vibrate everytime you do it incorrectly"
+            + "\nDifficulty: " + difficultyTrimmed, "#6599FF", "#ffffff", 10000);
+        this.menuManager.setProperty("progress", "maxprogress", "100");
+        this.menuManager.setProperty("progress", "progress", this.progress.toString());
+        this.startTime = currentTime;
+        //the game will start after 10 seconds.
+        this.gameStartTime = this.startTime + 10000;
+    };
+    /**
+     * This method gets called every 250 milliseconds by the system, any logic updates to the state of your character should occur here.
+     * Note: onTick only gets called when the screen is ON.
+     * @param currentTime The current time (in milliseconds) on the device.
+     */
+    CatchMiniGame.prototype.onTick = function (currentTime) {
+        if (currentTime > this.gameStartTime) {
+            this.updateProgress(currentTime);
+            this.moveToRandomLocation(currentTime);
+            this.drawRandomImage(currentTime);
+        }
+        else {
+            this.lastDecreaseTime = currentTime;
+            this.touches = 1;
+        }
+    };
+    CatchMiniGame.prototype.updateProgress = function (currentTime) {
+        var ongoingTime = currentTime - this.lastDecreaseTime;
+        if (ongoingTime > 1000) {
+            this.progress = this.progress - 1 - this.difficulty / 100;
+            this.lastDecreaseTime = currentTime;
+        }
+        if (this.progress <= 0) {
+            this.finishCallback(false);
+        }
+        if (this.progress < 20)
+            this.menuManager.setProperty("progress", "frontcolor", "#EC2027");
+        else if (this.progress < 60)
+            this.menuManager.setProperty("progress", "frontcolor", "#E59400");
+        this.menuManager.setProperty("progress", "Progress", this.progress.toString());
+    };
+    CatchMiniGame.prototype.moveToRandomLocation = function (currentTime) {
+        var randomMove = Math.floor(Math.random() * this.difficulty * 60) - Math.floor(Math.random() * this.difficulty * 60); //move the x,y in a number between(-difficulty * 60, +difficulty * 60)
+        this.actionManager.move(randomMove, randomMove, 250);
+    };
+    CatchMiniGame.prototype.drawRandomImage = function (currentTime) {
+        if (currentTime - this.lastDrawTime < 5000)
+            return;
+        this.lastDrawTime = currentTime;
+        var randomImage = this.resourceHelper.chooseRandomImage("fun");
+        if (randomImage != null)
+            this.actionManager.draw(randomImage, this.configurationManager.getMaximalResizeRatio(), false);
+    };
+    CatchMiniGame.prototype.onEventOccured = function (eventName) {
+        var now = this.configurationManager.getCurrentTime().currentTimeMillis;
+        switch (eventName) {
+            case "touch":
+                this.handleTouch(now);
+                break;
+            case "stop":
+                if (now - this.gameStartTime > 0)
+                    this.finishCallback(false);
+                break;
+        }
+    };
+    CatchMiniGame.prototype.handleTouch = function (currentTime) {
+        this.touches++;
+        this.progress += this.touches;
+        if (this.progress <= 0)
+            this.finishCallback(false);
+        else if (this.progress >= 100)
+            this.finishCallback(true);
+    };
+    return CatchMiniGame;
 }(MiniGame));
 //# sourceMappingURL=MiniGame.js.map
 var __extends = (this && this.__extends) || (function () {
@@ -4138,6 +4238,10 @@ var PassiveState = (function (_super) {
         _super.prototype.onStart.call(this, handler);
         this.lastPlayGameClick = 0;
         this.currentState = PassiveSubstate.LookingAround;
+        this.playerWinMessages = ["Very well done! but i'll win next time! for sure :D", "Argh! this is the last time that you win!",
+            "What?!? how did you win?! you CHEATER!", "Nice job! you are really good at this :D", "Wooooot, you won this one!, nice! "];
+        this.playerLoseMessages = ["Ahahaha, i won!", "You really thought you could win? ehehehe", "Phew, it was close! keep on training!",
+            "That was fun! because i won :D", "You really expected a different outcome??"];
     };
     PassiveState.prototype.onTick = function (time) {
         if (this.playingMiniGame) {
@@ -4359,20 +4463,25 @@ var PassiveState = (function (_super) {
             return;
         if (currentTime < this.noPlayPenaltyTime) {
             this.actionManager.showMessage("I said that i don't want to play right now!!", "#4C4D4F", "#ffffff", 2000);
-            // this.noPlayPenaltyTime = currentTime + 10000;
+            this.noPlayPenaltyTime = currentTime + 10000;
             return;
         }
         if (this.shouldEventHappen(0.6)) {
             this.actionManager.showMessage("I don't want to play right now..", "#4C4D4F", "#ffffff", 2000);
-            // this.noPlayPenaltyTime = currentTime + 10000;
+            this.noPlayPenaltyTime = currentTime + 10000;
             return;
         }
         this.menuManager.setProperty("playButton", "Text", "Surrender");
         this.playingMiniGame = true;
-        var randomNumber = Math.random();
-        if (randomNumber > 50) {
+        var randomNumber = Math.random() * 100;
+        if (randomNumber <= 30) {
             this.miniGame = new HideAndSeekMiniGame(this.managersHandler, function (playerWon) {
                 _this.actionManager.animateAlpha(1, 200);
+                _this.miniGameOver(playerWon);
+            });
+        }
+        else if (randomNumber <= 60) {
+            this.miniGame = new CatchMiniGame(this.managersHandler, this.resourceManagerHelper, function (playerWon) {
                 _this.miniGameOver(playerWon);
             });
         }
@@ -4386,15 +4495,17 @@ var PassiveState = (function (_super) {
     PassiveState.prototype.miniGameOver = function (playerWon) {
         this.actionManager.move(-this.configurationManager.getScreenWidth(), this.configurationManager.getScreenHeight(), 20);
         this.playingMiniGame = false;
+        var messageIndex = Math.floor(Math.random() * 4);
         if (playerWon) {
             this.actionManager.draw("pirate__laughing.png", this.configurationManager.getMaximalResizeRatio(), false);
-            this.actionManager.showMessage("Great job! you won! i'll get you next time! :D", "#91CA63", "#ffffff", 5000);
+            this.actionManager.showMessage(this.playerWinMessages[messageIndex], "#91CA63", "#ffffff", 5000);
         }
         else {
             this.actionManager.draw("laughing-ha.png", this.configurationManager.getMaximalResizeRatio(), false);
-            this.actionManager.showMessage("Haha, i won! are you ready to lose again? :D", "#EC2027", "#ffffff", 5000);
+            this.actionManager.showMessage(this.playerLoseMessages[messageIndex], "#EC2027", "#ffffff", 5000);
         }
         this.menuManager.setProperty("playButton", "Text", "Let's play!");
+        this.menuManager.setProperty("progress", "maxprogress", "100");
         this.menuManager.setProperty("progress", "progress", "0");
     };
     return PassiveState;

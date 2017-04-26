@@ -130,6 +130,9 @@ class PassiveState extends PirateState {
     static get ASKING_FOR_INTERACTION_TIME(): number { return 15000; };
     static get DOING_SOMETHING_STUPID_TIME(): number { return 20000; };
 
+    private playerLoseMessages: string[];
+    private playerWinMessages: string[];
+
     private lastPlayGameClick: number;
     private miniGame: MiniGame;
     private currentState: PassiveSubstate;
@@ -149,6 +152,12 @@ class PassiveState extends PirateState {
         super.onStart(handler);
         this.lastPlayGameClick = 0;
         this.currentState = PassiveSubstate.LookingAround;
+
+        this.playerWinMessages = ["Very well done! but i'll win next time! for sure :D", "Argh! this is the last time that you win!",
+            "What?!? how did you win?! you CHEATER!", "Nice job! you are really good at this :D", "Wooooot, you won this one!, nice! "];
+
+        this.playerLoseMessages = ["Ahahaha, i won!", "You really thought you could win? ehehehe", "Phew, it was close! keep on training!",
+            "That was fun! because i won :D", "You really expected a different outcome??"];
     }
 
     onTick(time: number): void {
@@ -427,12 +436,18 @@ class PassiveState extends PirateState {
 
         this.menuManager.setProperty("playButton", "Text", "Surrender");
         this.playingMiniGame = true;
-        let randomNumber = Math.random();
+        let randomNumber = Math.random() * 100;
 
-        if (randomNumber > 50) {
+        if (randomNumber <= 30) {
             this.miniGame = new HideAndSeekMiniGame(this.managersHandler,
                 (playerWon: boolean) => {
                     this.actionManager.animateAlpha(1, 200);
+                    this.miniGameOver(playerWon);
+                });
+        }
+        else if (randomNumber <= 60) {
+            this.miniGame = new CatchMiniGame(this.managersHandler, this.resourceManagerHelper,
+                (playerWon: boolean) => {
                     this.miniGameOver(playerWon);
                 });
         }
@@ -450,16 +465,19 @@ class PassiveState extends PirateState {
         this.actionManager.move(-this.configurationManager.getScreenWidth(), this.configurationManager.getScreenHeight(), 20);
         this.playingMiniGame = false;
 
+        let messageIndex = Math.floor(Math.random() * 4);
+
         if (playerWon) {
             this.actionManager.draw("pirate__laughing.png", this.configurationManager.getMaximalResizeRatio(), false);
-            this.actionManager.showMessage("Great job! you won! i'll get you next time! :D", "#91CA63", "#ffffff", 5000);
+            this.actionManager.showMessage(this.playerWinMessages[messageIndex], "#91CA63", "#ffffff", 5000);
         }
         else {
             this.actionManager.draw("laughing-ha.png", this.configurationManager.getMaximalResizeRatio(), false);
-            this.actionManager.showMessage("Haha, i won! are you ready to lose again? :D", "#EC2027", "#ffffff", 5000);
+            this.actionManager.showMessage(this.playerLoseMessages[messageIndex], "#EC2027", "#ffffff", 5000);
         }
 
         this.menuManager.setProperty("playButton", "Text", "Let's play!");
+        this.menuManager.setProperty("progress", "maxprogress", "100");
         this.menuManager.setProperty("progress", "progress", "0");
     }
 }

@@ -415,13 +415,13 @@ class PassiveState extends PirateState {
 
         if (currentTime < this.noPlayPenaltyTime) {
             this.actionManager.showMessage("I said that i don't want to play right now!!", "#4C4D4F", "#ffffff", 2000);
-           // this.noPlayPenaltyTime = currentTime + 10000;
+            this.noPlayPenaltyTime = currentTime + 10000;
             return;
         }
 
         if (this.shouldEventHappen(0.6)) {
             this.actionManager.showMessage("I don't want to play right now..", "#4C4D4F", "#ffffff", 2000);
-           // this.noPlayPenaltyTime = currentTime + 10000;
+            this.noPlayPenaltyTime = currentTime + 10000;
             return;
         }
 

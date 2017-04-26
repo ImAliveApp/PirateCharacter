@@ -177,7 +177,7 @@ var AliveClass = (function () {
         progressLabel.Width = 2;
         progressLabel.Height = 1;
         progressLabel.Name = "progressLabel";
-        progressLabel.Text = "Remaining time:";
+        progressLabel.Text = "Game time:";
         var progress = new ProgressBarMenuItem();
         progress.InitialX = 2;
         progress.InitialY = 5;
@@ -474,607 +474,6 @@ var ResourceManagerHelper = (function () {
 ;
 //# sourceMappingURL=ITextToSpeechManager.js.map
 //# sourceMappingURL=IStateSwitchable.js.map
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-var PirateState = (function () {
-    function PirateState(switchContext) {
-        this.switchContext = switchContext;
-        this.wordsEvaluator = new WordsEvaluator();
-    }
-    Object.defineProperty(PirateState, "WALK_TIME", {
-        get: function () { return 1000; },
-        enumerable: true,
-        configurable: true
-    });
-    ;
-    Object.defineProperty(PirateState, "SLEEPING", {
-        get: function () { return "sleeping"; },
-        enumerable: true,
-        configurable: true
-    });
-    ;
-    Object.defineProperty(PirateState, "PASSIVE", {
-        get: function () { return "passive"; },
-        enumerable: true,
-        configurable: true
-    });
-    ;
-    Object.defineProperty(PirateState, "ACTIVE", {
-        get: function () { return "active"; },
-        enumerable: true,
-        configurable: true
-    });
-    ;
-    PirateState.prototype.onStart = function (handler) {
-        var _this = this;
-        this.categoryOnScreen = "";
-        this.walking = false;
-        this.managersHandler = handler;
-        this.menuManager = handler.getMenuManager();
-        this.actionManager = handler.getActionManager();
-        this.resourceManager = handler.getResourceManager();
-        this.characterManager = handler.getCharacterManager();
-        this.configurationManager = handler.getConfigurationManager();
-        this.speechToTextManager = handler.getSpeechToTextManager();
-        this.resourceManagerHelper = new ResourceManagerHelper(this.resourceManager);
-        this.timerTrigger = new TimerTriggerSystem(function () { return _this.configurationManager.getCurrentTime().currentTimeMillis; });
-    };
-    PirateState.prototype.walkRandomally = function () {
-        var screenWidth = this.configurationManager.getScreenWidth();
-        var currentX = this.characterManager.getCurrentCharacterXPosition();
-        var distanceToMove = Math.abs(currentX - screenWidth);
-        var category = AgentConstants.ON_FALLING_RIGHT;
-        this.walking = true;
-        if (this.shouldEventHappen(0.5) && distanceToMove > screenWidth / 4) {
-            this.actionManager.move(distanceToMove / 3, 0, PirateState.WALK_TIME);
-        }
-        else {
-            this.actionManager.move(-distanceToMove / 3, 0, PirateState.WALK_TIME);
-            category = AgentConstants.ON_FALLING_LEFT;
-        }
-        this.drawAndPlayRandomResourceByCategory(category);
-    };
-    PirateState.prototype.shouldEventHappen = function (chance) {
-        return Math.random() < chance;
-    };
-    PirateState.prototype.drawAndPlayRandomResourceByCategory = function (category) {
-        if (this.playingMiniGame)
-            return;
-        var resToDraw = this.resourceManagerHelper.chooseRandomImage(category);
-        if (resToDraw != this.categoryOnScreen)
-            this.actionManager.draw(resToDraw, this.configurationManager.getMaximalResizeRatio(), false);
-        this.categoryOnScreen = category;
-        var soundToPlay = this.resourceManagerHelper.chooseRandomSound(category);
-        if (!this.configurationManager.isSoundPlaying())
-            this.actionManager.playSound(soundToPlay, false);
-    };
-    return PirateState;
-}());
-var PassiveSubstate;
-(function (PassiveSubstate) {
-    PassiveSubstate[PassiveSubstate["LookingAround"] = 0] = "LookingAround";
-    PassiveSubstate[PassiveSubstate["Eating"] = 1] = "Eating";
-    PassiveSubstate[PassiveSubstate["Drinking"] = 2] = "Drinking";
-    PassiveSubstate[PassiveSubstate["Reading"] = 3] = "Reading";
-    PassiveSubstate[PassiveSubstate["DoingSomethingStupid"] = 4] = "DoingSomethingStupid";
-    PassiveSubstate[PassiveSubstate["RespondsToEvents"] = 5] = "RespondsToEvents";
-    PassiveSubstate[PassiveSubstate["AskingForInteraction"] = 6] = "AskingForInteraction";
-    PassiveSubstate[PassiveSubstate["WalkingAround"] = 7] = "WalkingAround";
-})(PassiveSubstate || (PassiveSubstate = {}));
-var PassiveState = (function (_super) {
-    __extends(PassiveState, _super);
-    function PassiveState(switchContext) {
-        var _this = _super.call(this, switchContext) || this;
-        _this.playingMiniGame = false;
-        return _this;
-    }
-    Object.defineProperty(PassiveState, "LOOKING_AROUND_CHANGE", {
-        get: function () { return 0.1; },
-        enumerable: true,
-        configurable: true
-    });
-    ;
-    Object.defineProperty(PassiveState, "CHANGE_PASSIVE_STATE", {
-        get: function () { return 0.25; },
-        enumerable: true,
-        configurable: true
-    });
-    ;
-    Object.defineProperty(PassiveState, "EATING_TIME", {
-        get: function () { return 10000; },
-        enumerable: true,
-        configurable: true
-    });
-    ;
-    Object.defineProperty(PassiveState, "READING_TIME", {
-        get: function () { return 20000; },
-        enumerable: true,
-        configurable: true
-    });
-    ;
-    Object.defineProperty(PassiveState, "HAVING_FUN_TIME", {
-        get: function () { return 20000; },
-        enumerable: true,
-        configurable: true
-    });
-    ;
-    Object.defineProperty(PassiveState, "ASKING_FOR_INTERACTION_TIME", {
-        get: function () { return 15000; },
-        enumerable: true,
-        configurable: true
-    });
-    ;
-    Object.defineProperty(PassiveState, "DOING_SOMETHING_STUPID_TIME", {
-        get: function () { return 20000; },
-        enumerable: true,
-        configurable: true
-    });
-    ;
-    PassiveState.prototype.initializeState = function () {
-    };
-    PassiveState.prototype.onStart = function (handler) {
-        _super.prototype.onStart.call(this, handler);
-        this.lastPlayGameClick = 0;
-        this.currentState = PassiveSubstate.LookingAround;
-    };
-    PassiveState.prototype.onTick = function (time) {
-        if (this.playingMiniGame) {
-            this.miniGame.onTick(time);
-            return;
-        }
-        switch (this.currentState) {
-            case PassiveSubstate.LookingAround:
-                this.lookingAroundTick(time);
-                break;
-            case PassiveSubstate.Eating:
-                this.eatingTick(time);
-                break;
-            case PassiveSubstate.Drinking:
-                this.drinkingTick(time);
-                break;
-            case PassiveSubstate.Reading:
-                this.readingTick(time);
-                break;
-            case PassiveSubstate.DoingSomethingStupid:
-                this.doingSomethingStupidTick(time);
-                break;
-            case PassiveSubstate.RespondsToEvents:
-                this.respondsToEventsTick(time);
-                break;
-            case PassiveSubstate.AskingForInteraction:
-                this.askingForInteractionTick(time);
-                break;
-            case PassiveSubstate.WalkingAround:
-                this.walkingAroundTick(time);
-                break;
-        }
-    };
-    PassiveState.prototype.lookingAroundTick = function (time) {
-        if (this.shouldEventHappen(PassiveState.LOOKING_AROUND_CHANGE)) {
-            if (this.shouldEventHappen(PassiveState.CHANGE_PASSIVE_STATE)) {
-                this.actionManager.stopSound();
-                this.currentState = PassiveSubstate.DoingSomethingStupid;
-                this.timerTrigger.set("doingSomethingStupid", PassiveState.DOING_SOMETHING_STUPID_TIME);
-            }
-            else if (this.shouldEventHappen(PassiveState.CHANGE_PASSIVE_STATE)) {
-                this.actionManager.stopSound();
-                this.currentState = PassiveSubstate.Eating;
-                this.timerTrigger.set("eating", PassiveState.EATING_TIME);
-            }
-            else if (this.shouldEventHappen(PassiveState.CHANGE_PASSIVE_STATE)) {
-                this.actionManager.stopSound();
-                this.currentState = PassiveSubstate.Reading;
-                this.timerTrigger.set("reading", PassiveState.READING_TIME);
-            }
-            else if (this.shouldEventHappen(PassiveState.CHANGE_PASSIVE_STATE)) {
-                this.actionManager.stopSound();
-                this.currentState = PassiveSubstate.Drinking;
-                this.timerTrigger.set("drinking", PassiveState.EATING_TIME);
-            }
-            else if (this.shouldEventHappen(PassiveState.CHANGE_PASSIVE_STATE)) {
-                this.actionManager.stopSound();
-                this.currentState = PassiveSubstate.AskingForInteraction;
-                this.timerTrigger.set("askingForInteraction", PassiveState.ASKING_FOR_INTERACTION_TIME);
-            }
-            else {
-                this.actionManager.stopSound();
-                this.walkRandomally();
-                this.currentState = PassiveSubstate.WalkingAround;
-                this.timerTrigger.set("walkingAround", PirateState.WALK_TIME);
-            }
-        }
-        else
-            this.lookingAroundEmote(time);
-    };
-    PassiveState.prototype.lookingAroundEmote = function (time) {
-        this.drawAndPlayRandomResourceByCategory("lookingAround");
-    };
-    PassiveState.prototype.eatingTick = function (time) {
-        if (!this.timerTrigger.isOnGoing("eating")) {
-            this.actionManager.stopSound();
-            this.currentState = PassiveSubstate.LookingAround;
-            return;
-        }
-        this.eatingEmote(time);
-    };
-    PassiveState.prototype.eatingEmote = function (time) {
-        this.drawAndPlayRandomResourceByCategory("eating");
-    };
-    PassiveState.prototype.drinkingTick = function (time) {
-        if (!this.timerTrigger.isOnGoing("drinking")) {
-            this.actionManager.stopSound();
-            this.currentState = PassiveSubstate.LookingAround;
-            return;
-        }
-        this.drinkingEmote(time);
-    };
-    PassiveState.prototype.drinkingEmote = function (time) {
-        var resToDraw = this.resourceManagerHelper.chooseRandomImage("drinking");
-        this.actionManager.draw(resToDraw, this.configurationManager.getMaximalResizeRatio(), false);
-        var soundToPlay = this.resourceManagerHelper.chooseRandomSound("drinking");
-        if (!this.configurationManager.isSoundPlaying())
-            this.actionManager.playSound(soundToPlay, false);
-    };
-    PassiveState.prototype.readingTick = function (time) {
-        if (!this.timerTrigger.isOnGoing("reading")) {
-            this.actionManager.stopSound();
-            this.currentState = PassiveSubstate.LookingAround;
-            return;
-        }
-        this.readingEmote(time);
-    };
-    PassiveState.prototype.readingEmote = function (time) {
-        var resToDraw = this.resourceManagerHelper.chooseRandomImage("reading");
-        this.actionManager.draw(resToDraw, this.configurationManager.getMaximalResizeRatio(), false);
-        var soundToPlay = this.resourceManagerHelper.chooseRandomSound("reading");
-        if (!this.configurationManager.isSoundPlaying())
-            this.actionManager.playSound(soundToPlay, false);
-    };
-    PassiveState.prototype.askingForInteractionTick = function (time) {
-        if (!this.timerTrigger.isOnGoing("askingForInteraction")) {
-            this.actionManager.stopSound();
-            this.currentState = PassiveSubstate.LookingAround;
-            return;
-        }
-        this.askingForInteractionEmote(time);
-    };
-    PassiveState.prototype.askingForInteractionEmote = function (time) {
-        this.drawAndPlayRandomResourceByCategory("askingForInteraction");
-    };
-    PassiveState.prototype.doingSomethingStupidTick = function (time) {
-        if (!this.timerTrigger.isOnGoing("doingSomethingStupid")) {
-            this.actionManager.stopSound();
-            this.currentState = PassiveSubstate.LookingAround;
-            return;
-        }
-        this.doingSomethingStupidEmote(time);
-    };
-    PassiveState.prototype.doingSomethingStupidEmote = function (time) {
-        this.drawAndPlayRandomResourceByCategory("doingSomethingStupid");
-    };
-    PassiveState.prototype.respondsToEventsTick = function (time) {
-    };
-    PassiveState.prototype.walkingAroundTick = function (time) {
-        if (!this.timerTrigger.isOnGoing("walkingAround")) {
-            this.actionManager.stopSound();
-            this.walking = false;
-            this.currentState = PassiveSubstate.LookingAround;
-            return;
-        }
-    };
-    PassiveState.prototype.onBackgroundTick = function (time) {
-        this.onTick(time);
-    };
-    PassiveState.prototype.onPhoneEventOccurred = function (eventName) {
-        if (eventName == AgentConstants.NEW_OUTGOING_CALL ||
-            eventName == AgentConstants.INCOMING_CALL ||
-            eventName == AgentConstants.SMS_RECEIVED) {
-            this.timerTrigger.set("fun", PassiveState.HAVING_FUN_TIME);
-            this.actionManager.stopSound();
-            this.switchContext.switchTo(PirateState.ACTIVE);
-        }
-    };
-    PassiveState.prototype.onMove = function (oldX, oldY, newX, newY) {
-    };
-    PassiveState.prototype.onRelease = function (currentX, currentY) {
-        var screenHeight = this.configurationManager.getScreenHeight();
-        if (currentY < screenHeight - 50)
-            this.actionManager.move(0, screenHeight, 0);
-    };
-    PassiveState.prototype.onPick = function (currentX, currentY) {
-        if (this.playingMiniGame) {
-            this.miniGame.onEventOccured("touch");
-        }
-        else {
-            this.actionManager.stopSound();
-            this.currentState = PassiveSubstate.LookingAround;
-        }
-    };
-    PassiveState.prototype.onMenuItemSelected = function (itemName) {
-        switch (itemName) {
-            case "speakButton":
-                if (!this.speechToTextManager.isSpeechRecognitionAvailable() || this.playingMiniGame)
-                    return;
-                this.speechToTextManager.stopSpeechRecognition();
-                this.speechToTextManager.startSpeechRecognition();
-                break;
-            case "playButton":
-                if (this.playingMiniGame) {
-                    this.miniGame.onEventOccured("stop");
-                }
-                else {
-                    var now = this.configurationManager.getCurrentTime().currentTimeMillis;
-                    if (now - this.lastPlayGameClick < 2000)
-                        return;
-                    this.lastPlayGameClick = now;
-                    this.playRandomMiniGame();
-                }
-                break;
-        }
-    };
-    PassiveState.prototype.onResponseReceived = function (response) {
-    };
-    PassiveState.prototype.onLocationReceived = function (location) {
-    };
-    PassiveState.prototype.onUserActivityStateReceived = function (state) {
-    };
-    PassiveState.prototype.onHeadphoneStateReceived = function (state) {
-    };
-    PassiveState.prototype.onWeatherReceived = function (weather) {
-    };
-    PassiveState.prototype.onConfigureMenuItems = function (menuBuilder) { };
-    PassiveState.prototype.onSpeechRecognitionResults = function (results) {
-        if (this.wordsEvaluator.containsBadWord(results) && !this.playingMiniGame) {
-            this.actionManager.stopSound();
-            this.currentState = PassiveSubstate.AskingForInteraction;
-            this.timerTrigger.set("askingForInteraction", PassiveState.ASKING_FOR_INTERACTION_TIME);
-        }
-    };
-    PassiveState.prototype.onPlacesReceived = function (places) { };
-    PassiveState.prototype.playRandomMiniGame = function () {
-        var _this = this;
-        if (this.playingMiniGame)
-            return;
-        if (this.shouldEventHappen(0.6)) {
-            this.actionManager.showMessage("I don't want to play right now..", "#4C4D4F", "#ffffff", 2000);
-            return;
-        }
-        this.menuManager.setProperty("playButton", "Text", "Surrender");
-        this.playingMiniGame = true;
-        this.miniGame = new HideAndSeekMiniGame(this.managersHandler, function (playerWon) {
-            _this.actionManager.move(-Number.MAX_VALUE, _this.configurationManager.getScreenHeight(), 20);
-            _this.actionManager.animateAlpha(1, 200);
-            _this.playingMiniGame = false;
-            if (playerWon) {
-                _this.actionManager.draw("pirate__laughing.png", _this.configurationManager.getMaximalResizeRatio(), false);
-                _this.actionManager.showMessage("Great job! you won! i'll get you next time! :D", "#91CA63", "#ffffff", 5000);
-            }
-            else {
-                _this.actionManager.draw("laughing-ha.png", _this.configurationManager.getMaximalResizeRatio(), false);
-                _this.actionManager.showMessage("Haha, i won! are you ready to lose again? :D", "#EC2027", "#ffffff", 5000);
-            }
-            _this.menuManager.setProperty("playButton", "Text", "Let's play!");
-            _this.menuManager.setProperty("progress", "progress", "0");
-        });
-        this.miniGame.onStart(this.configurationManager.getCurrentTime().currentTimeMillis);
-    };
-    return PassiveState;
-}(PirateState));
-var SleepingSubstate;
-(function (SleepingSubstate) {
-    SleepingSubstate[SleepingSubstate["Normal"] = 0] = "Normal";
-    SleepingSubstate[SleepingSubstate["Nap"] = 1] = "Nap";
-    SleepingSubstate[SleepingSubstate["Angry"] = 2] = "Angry";
-})(SleepingSubstate || (SleepingSubstate = {}));
-var SleepingState = (function (_super) {
-    __extends(SleepingState, _super);
-    function SleepingState(switchContext) {
-        return _super.call(this, switchContext) || this;
-    }
-    Object.defineProperty(SleepingState, "ANNOYED_TO_NORMAL_TIME", {
-        get: function () { return 5000; },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(SleepingState, "SNORE_TO_NORMAL_TIME", {
-        get: function () { return 5000; },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(SleepingState, "ANNOYED_EMOTE_CHANCE", {
-        get: function () { return 0.25; },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(SleepingState, "NORMAL_TO_SNORE_CHANCE", {
-        get: function () { return 0.0027; },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(SleepingState, "SNORE_TO_SLEEP_WALK_CHANCE", {
-        get: function () { return 0.001; },
-        enumerable: true,
-        configurable: true
-    });
-    SleepingState.prototype.initializeState = function () {
-        this.currentState = SleepingSubstate.Normal;
-    };
-    SleepingState.prototype.onStart = function (handler) {
-        _super.prototype.onStart.call(this, handler);
-        this.currentState = SleepingSubstate.Normal;
-    };
-    SleepingState.prototype.onTick = function (time) {
-        var now = this.configurationManager.getCurrentTime();
-        if (now.Hour < 22 && now.Hour > 8) {
-            this.switchContext.switchTo(PirateState.PASSIVE);
-            this.actionManager.stopSound();
-            return;
-        }
-        switch (this.currentState) {
-            case SleepingSubstate.Normal:
-                this.normalTick(time);
-                break;
-            case SleepingSubstate.Nap:
-                this.napTick(time);
-                break;
-            case SleepingSubstate.Angry:
-                this.angryTick(time);
-                break;
-        }
-    };
-    SleepingState.prototype.normalTick = function (time) {
-        if (!this.configurationManager.isSoundPlaying()) {
-            this.normalEmote(time);
-        }
-        if (this.shouldEventHappen(0.25)) {
-            this.actionManager.stopSound();
-            this.timerTrigger.set("sleep_nap", SleepingState.SNORE_TO_NORMAL_TIME);
-            this.currentState = SleepingSubstate.Nap;
-        }
-    };
-    SleepingState.prototype.normalEmote = function (time) {
-        this.drawAndPlayRandomResourceByCategory("sleeping-normal");
-    };
-    SleepingState.prototype.napTick = function (time) {
-        if (!this.timerTrigger.isOnGoing("sleep_nap")) {
-            this.actionManager.stopSound();
-            this.currentState = SleepingSubstate.Normal;
-            return;
-        }
-        this.napEmote(time);
-    };
-    SleepingState.prototype.napEmote = function (time) {
-        this.drawAndPlayRandomResourceByCategory("sleeping-nap");
-    };
-    SleepingState.prototype.angryTick = function (time) {
-        if (!this.timerTrigger.isOnGoing("angry")) {
-            this.actionManager.stopSound();
-            this.currentState = SleepingSubstate.Normal;
-            return;
-        }
-        this.angryEmote(time);
-    };
-    SleepingState.prototype.angryEmote = function (time) {
-        this.drawAndPlayRandomResourceByCategory("angry");
-    };
-    SleepingState.prototype.onBackgroundTick = function (time) {
-        this.onTick(time);
-    };
-    SleepingState.prototype.onPhoneEventOccurred = function (eventName) {
-        if (eventName == AgentConstants.NEW_OUTGOING_CALL ||
-            eventName == AgentConstants.INCOMING_CALL ||
-            eventName == AgentConstants.SMS_RECEIVED) {
-            this.actionManager.stopSound();
-            this.timerTrigger.set("angry", SleepingState.ANNOYED_TO_NORMAL_TIME);
-            this.currentState = SleepingSubstate.Angry;
-        }
-    };
-    SleepingState.prototype.onMove = function (oldX, oldY, newX, newY) {
-    };
-    SleepingState.prototype.onRelease = function (currentX, currentY) {
-        var screenHeight = this.configurationManager.getScreenHeight();
-        if (currentY < screenHeight - 50)
-            this.actionManager.move(0, screenHeight, 0);
-    };
-    SleepingState.prototype.onPick = function (currentX, currentY) {
-        this.actionManager.stopSound();
-        this.currentState = SleepingSubstate.Normal;
-    };
-    SleepingState.prototype.onMenuItemSelected = function (itemName) {
-    };
-    SleepingState.prototype.onResponseReceived = function (response) {
-    };
-    SleepingState.prototype.onLocationReceived = function (location) {
-    };
-    SleepingState.prototype.onUserActivityStateReceived = function (state) {
-    };
-    SleepingState.prototype.onHeadphoneStateReceived = function (state) {
-    };
-    SleepingState.prototype.onWeatherReceived = function (weather) {
-    };
-    SleepingState.prototype.onConfigureMenuItems = function (menuBuilder) {
-    };
-    SleepingState.prototype.onSpeechRecognitionResults = function (results) {
-        this.actionManager.stopSound();
-        this.currentState = SleepingSubstate.Angry;
-        this.timerTrigger.set("angry", SleepingState.ANNOYED_TO_NORMAL_TIME);
-    };
-    SleepingState.prototype.onPlacesReceived = function (places) { };
-    return SleepingState;
-}(PirateState));
-var ActiveSubstate;
-(function (ActiveSubstate) {
-    ActiveSubstate[ActiveSubstate["Fun"] = 0] = "Fun";
-})(ActiveSubstate || (ActiveSubstate = {}));
-var ActiveState = (function (_super) {
-    __extends(ActiveState, _super);
-    function ActiveState(switchContext) {
-        return _super.call(this, switchContext) || this;
-    }
-    ActiveState.prototype.initializeState = function () {
-        this.currentState = ActiveSubstate.Fun;
-    };
-    ActiveState.prototype.onTick = function (time) {
-        switch (this.currentState) {
-            case ActiveSubstate.Fun:
-                this.onFunTick(time);
-                break;
-        }
-    };
-    ActiveState.prototype.onFunTick = function (time) {
-        if (!this.timerTrigger.isOnGoing("fun")) {
-            this.switchContext.switchTo(PirateState.PASSIVE);
-            this.actionManager.stopSound();
-            return;
-        }
-        this.funEmote(time);
-    };
-    ActiveState.prototype.funEmote = function (time) {
-        this.drawAndPlayRandomResourceByCategory("fun");
-    };
-    ActiveState.prototype.onBackgroundTick = function (time) {
-        this.onTick(time);
-    };
-    ActiveState.prototype.onStart = function (handler) {
-        _super.prototype.onStart.call(this, handler);
-    };
-    ActiveState.prototype.onPhoneEventOccurred = function (eventName) {
-    };
-    ActiveState.prototype.onMove = function (oldX, oldY, newX, newY) {
-    };
-    ActiveState.prototype.onRelease = function (currentX, currentY) {
-        var screenHeight = this.configurationManager.getScreenHeight();
-        if (currentY < screenHeight - 50)
-            this.actionManager.move(0, screenHeight, 0);
-    };
-    ActiveState.prototype.onPick = function (currentX, currentY) {
-    };
-    ActiveState.prototype.onMenuItemSelected = function (itemName) {
-    };
-    ActiveState.prototype.onResponseReceived = function (response) {
-    };
-    ActiveState.prototype.onLocationReceived = function (location) {
-    };
-    ActiveState.prototype.onUserActivityStateReceived = function (state) {
-    };
-    ActiveState.prototype.onHeadphoneStateReceived = function (state) {
-    };
-    ActiveState.prototype.onWeatherReceived = function (weather) {
-    };
-    ActiveState.prototype.onConfigureMenuItems = function (menuBuilder) { };
-    ActiveState.prototype.onSpeechRecognitionResults = function (results) { };
-    ActiveState.prototype.onPlacesReceived = function (places) { };
-    return ActiveState;
-}(PirateState));
-//# sourceMappingURL=PirateState.js.map
 var TimerTriggerSystem = (function () {
     function TimerTriggerSystem(currentTimeCallback) {
         this.currentTime = currentTimeCallback;
@@ -4397,9 +3796,10 @@ var HideAndSeekMiniGame = (function (_super) {
      */
     HideAndSeekMiniGame.prototype.onStart = function (currentTime) {
         this.catches = 0;
-        this.goalCatches = Math.floor(Math.random() * 20) + 1;
-        this.gameTime = Math.floor(this.goalCatches * Math.random() * 10) + 5;
+        this.goalCatches = Math.floor(Math.random() * 20) + 1; //number of times to catch (number between 1-21)
+        this.gameTime = Math.floor(this.goalCatches * Math.random() * 10) + 5; //total time to catch/play (number between 5-215)
         this.actionManager.draw("laughing-ha.png", this.configurationManager.getMaximalResizeRatio(), false);
+        //Displaying an explainer message for 10 seconds.
         this.actionManager.showMessage("This is a hide and seek game! i will hide, and your job is to catch me "
             + this.goalCatches + " times in "
             + this.gameTime
@@ -4407,8 +3807,14 @@ var HideAndSeekMiniGame = (function (_super) {
         this.menuManager.setProperty("progress", "maxprogress", this.gameTime.toString());
         this.menuManager.setProperty("progress", "progress", this.gameTime.toString());
         this.startTime = currentTime;
+        //the game will start after 10 seconds.
         this.gameStartTime = this.startTime + 10000;
     };
+    /**
+     * This method gets called every 250 milliseconds by the system, any logic updates to the state of your character should occur here.
+     * Note: onTick only gets called when the screen is ON.
+     * @param currentTime The current time (in milliseconds) on the device.
+     */
     HideAndSeekMiniGame.prototype.onTick = function (currentTime) {
         if (currentTime > this.gameStartTime) {
             this.actionManager.animateAlpha(0, 50);
@@ -4418,13 +3824,14 @@ var HideAndSeekMiniGame = (function (_super) {
         else {
             this.catches = 0;
         }
+        //game time is over.
         if (currentTime - this.startTime > this.gameTime * 1000) {
             this.finishCallback(false);
         }
     };
     HideAndSeekMiniGame.prototype.updateProgress = function (currentTime) {
         var ongoingTime = currentTime - this.gameStartTime;
-        var remainingTime = 60 - ongoingTime / 1000;
+        var remainingTime = this.gameTime - ongoingTime / 1000;
         if (remainingTime < 20)
             this.menuManager.setProperty("progress", "frontcolor", "#EC2027");
         else if (remainingTime < 40)
@@ -4461,4 +3868,742 @@ var HideAndSeekMiniGame = (function (_super) {
     };
     return HideAndSeekMiniGame;
 }(MiniGame));
+var ReflexMiniGame = (function (_super) {
+    __extends(ReflexMiniGame, _super);
+    function ReflexMiniGame(handler, finishCallback) {
+        var _this = _super.call(this) || this;
+        _this.menuManager = handler.getMenuManager();
+        _this.actionManager = handler.getActionManager();
+        _this.characterManager = handler.getCharacterManager();
+        _this.configurationManager = handler.getConfigurationManager();
+        _this.finishCallback = finishCallback;
+        return _this;
+    }
+    /**
+     * This method gets called once when the user clicks on the 'Lets play' button in the Menu.
+     * We use this method to initiate the game and display an explanation about it, so the user will know what to do.
+     * @param currentTime The current system time.
+     */
+    ReflexMiniGame.prototype.onStart = function (currentTime) {
+        this.lastDecreaseTime = currentTime;
+        this.touches = 1;
+        this.progress = 50;
+        this.dancingTime = 0;
+        this.currentDrawable = "breathing.png";
+        this.difficulty = Math.random() * 100;
+        var difficultyTrimmed = this.difficulty.toString().substring(0, 3);
+        this.actionManager.draw("laughing-ha.png", this.configurationManager.getMaximalResizeRatio(), false);
+        //Displaying an explainer message for 10 seconds.
+        this.actionManager.showMessage("This is a reflex game! i will walk around the screen, and you will need to touch me ,but ONLY while i dance! :D "
+            + "\nOnce the progress bar in the menu will reach 100%, you will win! but if it reaches 0%... i will win! :D"
+            + "\nThe phone will vibrate everytime you do it incorrectly"
+            + "\nDifficulty: " + difficultyTrimmed, "#6599FF", "#ffffff", 10000);
+        this.menuManager.setProperty("progress", "maxprogress", "100");
+        this.menuManager.setProperty("progress", "progress", this.progress.toString());
+        this.startTime = currentTime;
+        //the game will start after 10 seconds.
+        this.gameStartTime = this.startTime + 10000;
+    };
+    /**
+     * This method gets called every 250 milliseconds by the system, any logic updates to the state of your character should occur here.
+     * Note: onTick only gets called when the screen is ON.
+     * @param currentTime The current time (in milliseconds) on the device.
+     */
+    ReflexMiniGame.prototype.onTick = function (currentTime) {
+        if (currentTime > this.gameStartTime) {
+            this.updateProgress(currentTime);
+            this.moveToRandomLocation(currentTime);
+            this.maybeDance(currentTime);
+            this.drawCurrentState();
+        }
+        else {
+            this.lastDecreaseTime = currentTime;
+            this.touches = 1;
+        }
+    };
+    ReflexMiniGame.prototype.updateProgress = function (currentTime) {
+        var ongoingTime = currentTime - this.lastDecreaseTime;
+        if (ongoingTime > 1000) {
+            this.progress = this.progress - 1 - this.difficulty / 100;
+            this.lastDecreaseTime = currentTime;
+        }
+        if (this.progress <= 0) {
+            this.finishCallback(false);
+        }
+        if (this.progress < 20)
+            this.menuManager.setProperty("progress", "frontcolor", "#EC2027");
+        else if (this.progress < 60)
+            this.menuManager.setProperty("progress", "frontcolor", "#E59400");
+        this.menuManager.setProperty("progress", "Progress", this.progress.toString());
+    };
+    ReflexMiniGame.prototype.moveToRandomLocation = function (currentTime) {
+        var randomMove = Math.floor(Math.random() * this.difficulty * 50) - Math.floor(Math.random() * this.difficulty * 50); //move the x,y in a number between(-difficulty * 50, +difficulty * 50)
+        this.actionManager.move(randomMove, randomMove, 250);
+    };
+    ReflexMiniGame.prototype.maybeDance = function (currentTime) {
+        if (currentTime > this.dancingTime) {
+            this.currentDrawable = "breathing.png";
+        }
+        var danceChance = (100 - this.progress) / 100;
+        if (danceChance < 0.15)
+            danceChance = 0.15;
+        if (Math.random() < danceChance) {
+            this.dancingTime = currentTime + danceChance * 2000;
+            this.currentDrawable = "pirate-dancing.png";
+        }
+    };
+    ReflexMiniGame.prototype.drawCurrentState = function () {
+        this.actionManager.draw(this.currentDrawable, this.configurationManager.getMaximalResizeRatio(), false);
+    };
+    ReflexMiniGame.prototype.onEventOccured = function (eventName) {
+        var now = this.configurationManager.getCurrentTime().currentTimeMillis;
+        switch (eventName) {
+            case "touch":
+                this.handleTouch(now);
+                break;
+            case "stop":
+                if (now - this.gameStartTime > 0)
+                    this.finishCallback(false);
+                break;
+        }
+    };
+    ReflexMiniGame.prototype.handleTouch = function (currentTime) {
+        if (currentTime > this.dancingTime) {
+            this.progress -= this.touches;
+            this.actionManager.vibrate(250);
+            this.touches--;
+            this.actionManager.showSystemMessage("BAD " + this.progress.toString());
+        }
+        else {
+            this.touches++;
+            this.actionManager.showSystemMessage("Good :" + this.progress.toString());
+            this.progress += this.touches;
+        }
+        if (this.progress <= 0)
+            this.finishCallback(false);
+        else if (this.progress >= 100)
+            this.finishCallback(true);
+        this.currentDrawable = "breathing.png";
+    };
+    return ReflexMiniGame;
+}(MiniGame));
 //# sourceMappingURL=MiniGame.js.map
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var PirateState = (function () {
+    function PirateState(switchContext) {
+        this.switchContext = switchContext;
+        this.wordsEvaluator = new WordsEvaluator();
+    }
+    Object.defineProperty(PirateState, "WALK_TIME", {
+        get: function () { return 1000; },
+        enumerable: true,
+        configurable: true
+    });
+    ;
+    Object.defineProperty(PirateState, "SLEEPING", {
+        get: function () { return "sleeping"; },
+        enumerable: true,
+        configurable: true
+    });
+    ;
+    Object.defineProperty(PirateState, "PASSIVE", {
+        get: function () { return "passive"; },
+        enumerable: true,
+        configurable: true
+    });
+    ;
+    Object.defineProperty(PirateState, "ACTIVE", {
+        get: function () { return "active"; },
+        enumerable: true,
+        configurable: true
+    });
+    ;
+    PirateState.prototype.onStart = function (handler) {
+        var _this = this;
+        this.categoryOnScreen = "";
+        this.walking = false;
+        this.managersHandler = handler;
+        this.menuManager = handler.getMenuManager();
+        this.actionManager = handler.getActionManager();
+        this.resourceManager = handler.getResourceManager();
+        this.characterManager = handler.getCharacterManager();
+        this.configurationManager = handler.getConfigurationManager();
+        this.speechToTextManager = handler.getSpeechToTextManager();
+        this.resourceManagerHelper = new ResourceManagerHelper(this.resourceManager);
+        this.timerTrigger = new TimerTriggerSystem(function () { return _this.configurationManager.getCurrentTime().currentTimeMillis; });
+    };
+    PirateState.prototype.walkRandomally = function () {
+        var screenWidth = this.configurationManager.getScreenWidth();
+        var currentX = this.characterManager.getCurrentCharacterXPosition();
+        var distanceToMove = Math.abs(currentX - screenWidth);
+        var category = AgentConstants.ON_FALLING_RIGHT;
+        this.walking = true;
+        if (this.shouldEventHappen(0.5) && distanceToMove > screenWidth / 4) {
+            this.actionManager.move(distanceToMove / 3, 0, PirateState.WALK_TIME);
+        }
+        else {
+            this.actionManager.move(-distanceToMove / 3, 0, PirateState.WALK_TIME);
+            category = AgentConstants.ON_FALLING_LEFT;
+        }
+        this.drawAndPlayRandomResourceByCategory(category);
+    };
+    PirateState.prototype.shouldEventHappen = function (chance) {
+        return Math.random() < chance;
+    };
+    PirateState.prototype.drawAndPlayRandomResourceByCategory = function (category) {
+        if (this.playingMiniGame)
+            return;
+        var resToDraw = this.resourceManagerHelper.chooseRandomImage(category);
+        if (resToDraw != this.categoryOnScreen)
+            this.actionManager.draw(resToDraw, this.configurationManager.getMaximalResizeRatio(), false);
+        this.categoryOnScreen = category;
+        var soundToPlay = this.resourceManagerHelper.chooseRandomSound(category);
+        if (!this.configurationManager.isSoundPlaying())
+            this.actionManager.playSound(soundToPlay, false);
+    };
+    return PirateState;
+}());
+var PassiveSubstate;
+(function (PassiveSubstate) {
+    PassiveSubstate[PassiveSubstate["LookingAround"] = 0] = "LookingAround";
+    PassiveSubstate[PassiveSubstate["Eating"] = 1] = "Eating";
+    PassiveSubstate[PassiveSubstate["Drinking"] = 2] = "Drinking";
+    PassiveSubstate[PassiveSubstate["Reading"] = 3] = "Reading";
+    PassiveSubstate[PassiveSubstate["DoingSomethingStupid"] = 4] = "DoingSomethingStupid";
+    PassiveSubstate[PassiveSubstate["RespondsToEvents"] = 5] = "RespondsToEvents";
+    PassiveSubstate[PassiveSubstate["AskingForInteraction"] = 6] = "AskingForInteraction";
+    PassiveSubstate[PassiveSubstate["WalkingAround"] = 7] = "WalkingAround";
+})(PassiveSubstate || (PassiveSubstate = {}));
+var PassiveState = (function (_super) {
+    __extends(PassiveState, _super);
+    function PassiveState(switchContext) {
+        var _this = _super.call(this, switchContext) || this;
+        _this.playingMiniGame = false;
+        return _this;
+    }
+    Object.defineProperty(PassiveState, "LOOKING_AROUND_CHANGE", {
+        get: function () { return 0.1; },
+        enumerable: true,
+        configurable: true
+    });
+    ;
+    Object.defineProperty(PassiveState, "CHANGE_PASSIVE_STATE", {
+        get: function () { return 0.25; },
+        enumerable: true,
+        configurable: true
+    });
+    ;
+    Object.defineProperty(PassiveState, "EATING_TIME", {
+        get: function () { return 10000; },
+        enumerable: true,
+        configurable: true
+    });
+    ;
+    Object.defineProperty(PassiveState, "READING_TIME", {
+        get: function () { return 20000; },
+        enumerable: true,
+        configurable: true
+    });
+    ;
+    Object.defineProperty(PassiveState, "HAVING_FUN_TIME", {
+        get: function () { return 20000; },
+        enumerable: true,
+        configurable: true
+    });
+    ;
+    Object.defineProperty(PassiveState, "ASKING_FOR_INTERACTION_TIME", {
+        get: function () { return 15000; },
+        enumerable: true,
+        configurable: true
+    });
+    ;
+    Object.defineProperty(PassiveState, "DOING_SOMETHING_STUPID_TIME", {
+        get: function () { return 20000; },
+        enumerable: true,
+        configurable: true
+    });
+    ;
+    PassiveState.prototype.initializeState = function () {
+    };
+    PassiveState.prototype.onStart = function (handler) {
+        _super.prototype.onStart.call(this, handler);
+        this.lastPlayGameClick = 0;
+        this.currentState = PassiveSubstate.LookingAround;
+    };
+    PassiveState.prototype.onTick = function (time) {
+        if (this.playingMiniGame) {
+            this.miniGame.onTick(time);
+            return;
+        }
+        switch (this.currentState) {
+            case PassiveSubstate.LookingAround:
+                this.lookingAroundTick(time);
+                break;
+            case PassiveSubstate.Eating:
+                this.eatingTick(time);
+                break;
+            case PassiveSubstate.Drinking:
+                this.drinkingTick(time);
+                break;
+            case PassiveSubstate.Reading:
+                this.readingTick(time);
+                break;
+            case PassiveSubstate.DoingSomethingStupid:
+                this.doingSomethingStupidTick(time);
+                break;
+            case PassiveSubstate.RespondsToEvents:
+                this.respondsToEventsTick(time);
+                break;
+            case PassiveSubstate.AskingForInteraction:
+                this.askingForInteractionTick(time);
+                break;
+            case PassiveSubstate.WalkingAround:
+                this.walkingAroundTick(time);
+                break;
+        }
+    };
+    PassiveState.prototype.lookingAroundTick = function (time) {
+        if (this.shouldEventHappen(PassiveState.LOOKING_AROUND_CHANGE)) {
+            if (this.shouldEventHappen(PassiveState.CHANGE_PASSIVE_STATE)) {
+                this.actionManager.stopSound();
+                this.currentState = PassiveSubstate.DoingSomethingStupid;
+                this.timerTrigger.set("doingSomethingStupid", PassiveState.DOING_SOMETHING_STUPID_TIME);
+            }
+            else if (this.shouldEventHappen(PassiveState.CHANGE_PASSIVE_STATE)) {
+                this.actionManager.stopSound();
+                this.currentState = PassiveSubstate.Eating;
+                this.timerTrigger.set("eating", PassiveState.EATING_TIME);
+            }
+            else if (this.shouldEventHappen(PassiveState.CHANGE_PASSIVE_STATE)) {
+                this.actionManager.stopSound();
+                this.currentState = PassiveSubstate.Reading;
+                this.timerTrigger.set("reading", PassiveState.READING_TIME);
+            }
+            else if (this.shouldEventHappen(PassiveState.CHANGE_PASSIVE_STATE)) {
+                this.actionManager.stopSound();
+                this.currentState = PassiveSubstate.Drinking;
+                this.timerTrigger.set("drinking", PassiveState.EATING_TIME);
+            }
+            else if (this.shouldEventHappen(PassiveState.CHANGE_PASSIVE_STATE)) {
+                this.actionManager.stopSound();
+                this.currentState = PassiveSubstate.AskingForInteraction;
+                this.timerTrigger.set("askingForInteraction", PassiveState.ASKING_FOR_INTERACTION_TIME);
+            }
+            else {
+                this.actionManager.stopSound();
+                this.walkRandomally();
+                this.currentState = PassiveSubstate.WalkingAround;
+                this.timerTrigger.set("walkingAround", PirateState.WALK_TIME);
+            }
+        }
+        else
+            this.lookingAroundEmote(time);
+    };
+    PassiveState.prototype.lookingAroundEmote = function (time) {
+        this.drawAndPlayRandomResourceByCategory("lookingAround");
+    };
+    PassiveState.prototype.eatingTick = function (time) {
+        if (!this.timerTrigger.isOnGoing("eating")) {
+            this.actionManager.stopSound();
+            this.currentState = PassiveSubstate.LookingAround;
+            return;
+        }
+        this.eatingEmote(time);
+    };
+    PassiveState.prototype.eatingEmote = function (time) {
+        this.drawAndPlayRandomResourceByCategory("eating");
+    };
+    PassiveState.prototype.drinkingTick = function (time) {
+        if (!this.timerTrigger.isOnGoing("drinking")) {
+            this.actionManager.stopSound();
+            this.currentState = PassiveSubstate.LookingAround;
+            return;
+        }
+        this.drinkingEmote(time);
+    };
+    PassiveState.prototype.drinkingEmote = function (time) {
+        var resToDraw = this.resourceManagerHelper.chooseRandomImage("drinking");
+        this.actionManager.draw(resToDraw, this.configurationManager.getMaximalResizeRatio(), false);
+        var soundToPlay = this.resourceManagerHelper.chooseRandomSound("drinking");
+        if (!this.configurationManager.isSoundPlaying())
+            this.actionManager.playSound(soundToPlay, false);
+    };
+    PassiveState.prototype.readingTick = function (time) {
+        if (!this.timerTrigger.isOnGoing("reading")) {
+            this.actionManager.stopSound();
+            this.currentState = PassiveSubstate.LookingAround;
+            return;
+        }
+        this.readingEmote(time);
+    };
+    PassiveState.prototype.readingEmote = function (time) {
+        var resToDraw = this.resourceManagerHelper.chooseRandomImage("reading");
+        this.actionManager.draw(resToDraw, this.configurationManager.getMaximalResizeRatio(), false);
+        var soundToPlay = this.resourceManagerHelper.chooseRandomSound("reading");
+        if (!this.configurationManager.isSoundPlaying())
+            this.actionManager.playSound(soundToPlay, false);
+    };
+    PassiveState.prototype.askingForInteractionTick = function (time) {
+        if (!this.timerTrigger.isOnGoing("askingForInteraction")) {
+            this.actionManager.stopSound();
+            this.currentState = PassiveSubstate.LookingAround;
+            return;
+        }
+        this.askingForInteractionEmote(time);
+    };
+    PassiveState.prototype.askingForInteractionEmote = function (time) {
+        this.drawAndPlayRandomResourceByCategory("askingForInteraction");
+    };
+    PassiveState.prototype.doingSomethingStupidTick = function (time) {
+        if (!this.timerTrigger.isOnGoing("doingSomethingStupid")) {
+            this.actionManager.stopSound();
+            this.currentState = PassiveSubstate.LookingAround;
+            return;
+        }
+        this.doingSomethingStupidEmote(time);
+    };
+    PassiveState.prototype.doingSomethingStupidEmote = function (time) {
+        this.drawAndPlayRandomResourceByCategory("doingSomethingStupid");
+    };
+    PassiveState.prototype.respondsToEventsTick = function (time) {
+    };
+    PassiveState.prototype.walkingAroundTick = function (time) {
+        if (!this.timerTrigger.isOnGoing("walkingAround")) {
+            this.actionManager.stopSound();
+            this.walking = false;
+            this.currentState = PassiveSubstate.LookingAround;
+            return;
+        }
+    };
+    PassiveState.prototype.onBackgroundTick = function (time) {
+        this.onTick(time);
+    };
+    PassiveState.prototype.onPhoneEventOccurred = function (eventName) {
+        if (eventName == AgentConstants.NEW_OUTGOING_CALL ||
+            eventName == AgentConstants.INCOMING_CALL ||
+            eventName == AgentConstants.SMS_RECEIVED) {
+            this.timerTrigger.set("fun", PassiveState.HAVING_FUN_TIME);
+            this.actionManager.stopSound();
+            this.switchContext.switchTo(PirateState.ACTIVE);
+        }
+    };
+    PassiveState.prototype.onMove = function (oldX, oldY, newX, newY) {
+    };
+    PassiveState.prototype.onRelease = function (currentX, currentY) {
+        var screenHeight = this.configurationManager.getScreenHeight();
+        if (currentY < screenHeight - 50)
+            this.actionManager.move(0, screenHeight, 0);
+    };
+    PassiveState.prototype.onPick = function (currentX, currentY) {
+        if (this.playingMiniGame) {
+            this.miniGame.onEventOccured("touch");
+        }
+        else {
+            this.actionManager.stopSound();
+            this.currentState = PassiveSubstate.LookingAround;
+        }
+    };
+    PassiveState.prototype.onMenuItemSelected = function (itemName) {
+        switch (itemName) {
+            case "speakButton":
+                if (!this.speechToTextManager.isSpeechRecognitionAvailable() || this.playingMiniGame)
+                    return;
+                this.speechToTextManager.stopSpeechRecognition();
+                this.speechToTextManager.startSpeechRecognition();
+                break;
+            case "playButton":
+                if (this.playingMiniGame) {
+                    this.miniGame.onEventOccured("stop");
+                }
+                else {
+                    var now = this.configurationManager.getCurrentTime().currentTimeMillis;
+                    if (now - this.lastPlayGameClick < 2000)
+                        return;
+                    this.lastPlayGameClick = now;
+                    this.playRandomMiniGame(now);
+                }
+                break;
+        }
+    };
+    PassiveState.prototype.onResponseReceived = function (response) {
+    };
+    PassiveState.prototype.onLocationReceived = function (location) {
+    };
+    PassiveState.prototype.onUserActivityStateReceived = function (state) {
+    };
+    PassiveState.prototype.onHeadphoneStateReceived = function (state) {
+    };
+    PassiveState.prototype.onWeatherReceived = function (weather) {
+    };
+    PassiveState.prototype.onConfigureMenuItems = function (menuBuilder) { };
+    PassiveState.prototype.onSpeechRecognitionResults = function (results) {
+        if (this.wordsEvaluator.containsBadWord(results) && !this.playingMiniGame) {
+            this.actionManager.stopSound();
+            this.currentState = PassiveSubstate.AskingForInteraction;
+            this.timerTrigger.set("askingForInteraction", PassiveState.ASKING_FOR_INTERACTION_TIME);
+        }
+    };
+    PassiveState.prototype.onPlacesReceived = function (places) { };
+    PassiveState.prototype.playRandomMiniGame = function (currentTime) {
+        var _this = this;
+        if (this.playingMiniGame)
+            return;
+        if (currentTime < this.noPlayPenaltyTime) {
+            this.actionManager.showMessage("I said that i don't want to play right now!!", "#4C4D4F", "#ffffff", 2000);
+            // this.noPlayPenaltyTime = currentTime + 10000;
+            return;
+        }
+        if (this.shouldEventHappen(0.6)) {
+            this.actionManager.showMessage("I don't want to play right now..", "#4C4D4F", "#ffffff", 2000);
+            // this.noPlayPenaltyTime = currentTime + 10000;
+            return;
+        }
+        this.menuManager.setProperty("playButton", "Text", "Surrender");
+        this.playingMiniGame = true;
+        var randomNumber = Math.random();
+        if (randomNumber > 50) {
+            this.miniGame = new HideAndSeekMiniGame(this.managersHandler, function (playerWon) {
+                _this.actionManager.animateAlpha(1, 200);
+                _this.miniGameOver(playerWon);
+            });
+        }
+        else {
+            this.miniGame = new ReflexMiniGame(this.managersHandler, function (playerWon) {
+                _this.miniGameOver(playerWon);
+            });
+        }
+        this.miniGame.onStart(this.configurationManager.getCurrentTime().currentTimeMillis);
+    };
+    PassiveState.prototype.miniGameOver = function (playerWon) {
+        this.actionManager.move(-this.configurationManager.getScreenWidth(), this.configurationManager.getScreenHeight(), 20);
+        this.playingMiniGame = false;
+        if (playerWon) {
+            this.actionManager.draw("pirate__laughing.png", this.configurationManager.getMaximalResizeRatio(), false);
+            this.actionManager.showMessage("Great job! you won! i'll get you next time! :D", "#91CA63", "#ffffff", 5000);
+        }
+        else {
+            this.actionManager.draw("laughing-ha.png", this.configurationManager.getMaximalResizeRatio(), false);
+            this.actionManager.showMessage("Haha, i won! are you ready to lose again? :D", "#EC2027", "#ffffff", 5000);
+        }
+        this.menuManager.setProperty("playButton", "Text", "Let's play!");
+        this.menuManager.setProperty("progress", "progress", "0");
+    };
+    return PassiveState;
+}(PirateState));
+var SleepingSubstate;
+(function (SleepingSubstate) {
+    SleepingSubstate[SleepingSubstate["Normal"] = 0] = "Normal";
+    SleepingSubstate[SleepingSubstate["Nap"] = 1] = "Nap";
+    SleepingSubstate[SleepingSubstate["Angry"] = 2] = "Angry";
+})(SleepingSubstate || (SleepingSubstate = {}));
+var SleepingState = (function (_super) {
+    __extends(SleepingState, _super);
+    function SleepingState(switchContext) {
+        return _super.call(this, switchContext) || this;
+    }
+    Object.defineProperty(SleepingState, "ANNOYED_TO_NORMAL_TIME", {
+        get: function () { return 5000; },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(SleepingState, "SNORE_TO_NORMAL_TIME", {
+        get: function () { return 5000; },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(SleepingState, "ANNOYED_EMOTE_CHANCE", {
+        get: function () { return 0.25; },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(SleepingState, "NORMAL_TO_SNORE_CHANCE", {
+        get: function () { return 0.0027; },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(SleepingState, "SNORE_TO_SLEEP_WALK_CHANCE", {
+        get: function () { return 0.001; },
+        enumerable: true,
+        configurable: true
+    });
+    SleepingState.prototype.initializeState = function () {
+        this.currentState = SleepingSubstate.Normal;
+    };
+    SleepingState.prototype.onStart = function (handler) {
+        _super.prototype.onStart.call(this, handler);
+        this.currentState = SleepingSubstate.Normal;
+    };
+    SleepingState.prototype.onTick = function (time) {
+        var now = this.configurationManager.getCurrentTime();
+        if (now.Hour < 22 && now.Hour > 8) {
+            this.switchContext.switchTo(PirateState.PASSIVE);
+            this.actionManager.stopSound();
+            return;
+        }
+        switch (this.currentState) {
+            case SleepingSubstate.Normal:
+                this.normalTick(time);
+                break;
+            case SleepingSubstate.Nap:
+                this.napTick(time);
+                break;
+            case SleepingSubstate.Angry:
+                this.angryTick(time);
+                break;
+        }
+    };
+    SleepingState.prototype.normalTick = function (time) {
+        if (!this.configurationManager.isSoundPlaying()) {
+            this.normalEmote(time);
+        }
+        if (this.shouldEventHappen(0.25)) {
+            this.actionManager.stopSound();
+            this.timerTrigger.set("sleep_nap", SleepingState.SNORE_TO_NORMAL_TIME);
+            this.currentState = SleepingSubstate.Nap;
+        }
+    };
+    SleepingState.prototype.normalEmote = function (time) {
+        this.drawAndPlayRandomResourceByCategory("sleeping-normal");
+    };
+    SleepingState.prototype.napTick = function (time) {
+        if (!this.timerTrigger.isOnGoing("sleep_nap")) {
+            this.actionManager.stopSound();
+            this.currentState = SleepingSubstate.Normal;
+            return;
+        }
+        this.napEmote(time);
+    };
+    SleepingState.prototype.napEmote = function (time) {
+        this.drawAndPlayRandomResourceByCategory("sleeping-nap");
+    };
+    SleepingState.prototype.angryTick = function (time) {
+        if (!this.timerTrigger.isOnGoing("angry")) {
+            this.actionManager.stopSound();
+            this.currentState = SleepingSubstate.Normal;
+            return;
+        }
+        this.angryEmote(time);
+    };
+    SleepingState.prototype.angryEmote = function (time) {
+        this.drawAndPlayRandomResourceByCategory("angry");
+    };
+    SleepingState.prototype.onBackgroundTick = function (time) {
+        this.onTick(time);
+    };
+    SleepingState.prototype.onPhoneEventOccurred = function (eventName) {
+        if (eventName == AgentConstants.NEW_OUTGOING_CALL ||
+            eventName == AgentConstants.INCOMING_CALL ||
+            eventName == AgentConstants.SMS_RECEIVED) {
+            this.actionManager.stopSound();
+            this.timerTrigger.set("angry", SleepingState.ANNOYED_TO_NORMAL_TIME);
+            this.currentState = SleepingSubstate.Angry;
+        }
+    };
+    SleepingState.prototype.onMove = function (oldX, oldY, newX, newY) {
+    };
+    SleepingState.prototype.onRelease = function (currentX, currentY) {
+        var screenHeight = this.configurationManager.getScreenHeight();
+        if (currentY < screenHeight - 50)
+            this.actionManager.move(0, screenHeight, 0);
+    };
+    SleepingState.prototype.onPick = function (currentX, currentY) {
+        this.actionManager.stopSound();
+        this.currentState = SleepingSubstate.Normal;
+    };
+    SleepingState.prototype.onMenuItemSelected = function (itemName) {
+        this.actionManager.showMessage("Zzz Zzz Zzzzzzz", "#000000", "#ffffff", 2000);
+    };
+    SleepingState.prototype.onResponseReceived = function (response) {
+    };
+    SleepingState.prototype.onLocationReceived = function (location) {
+    };
+    SleepingState.prototype.onUserActivityStateReceived = function (state) {
+    };
+    SleepingState.prototype.onHeadphoneStateReceived = function (state) {
+    };
+    SleepingState.prototype.onWeatherReceived = function (weather) {
+    };
+    SleepingState.prototype.onConfigureMenuItems = function (menuBuilder) {
+    };
+    SleepingState.prototype.onSpeechRecognitionResults = function (results) {
+        this.actionManager.stopSound();
+        this.currentState = SleepingSubstate.Angry;
+        this.timerTrigger.set("angry", SleepingState.ANNOYED_TO_NORMAL_TIME);
+    };
+    SleepingState.prototype.onPlacesReceived = function (places) { };
+    return SleepingState;
+}(PirateState));
+var ActiveSubstate;
+(function (ActiveSubstate) {
+    ActiveSubstate[ActiveSubstate["Fun"] = 0] = "Fun";
+})(ActiveSubstate || (ActiveSubstate = {}));
+var ActiveState = (function (_super) {
+    __extends(ActiveState, _super);
+    function ActiveState(switchContext) {
+        return _super.call(this, switchContext) || this;
+    }
+    ActiveState.prototype.initializeState = function () {
+        this.currentState = ActiveSubstate.Fun;
+    };
+    ActiveState.prototype.onTick = function (time) {
+        switch (this.currentState) {
+            case ActiveSubstate.Fun:
+                this.onFunTick(time);
+                break;
+        }
+    };
+    ActiveState.prototype.onFunTick = function (time) {
+        if (!this.timerTrigger.isOnGoing("fun")) {
+            this.switchContext.switchTo(PirateState.PASSIVE);
+            this.actionManager.stopSound();
+            return;
+        }
+        this.funEmote(time);
+    };
+    ActiveState.prototype.funEmote = function (time) {
+        this.drawAndPlayRandomResourceByCategory("fun");
+    };
+    ActiveState.prototype.onBackgroundTick = function (time) {
+        this.onTick(time);
+    };
+    ActiveState.prototype.onStart = function (handler) {
+        _super.prototype.onStart.call(this, handler);
+    };
+    ActiveState.prototype.onPhoneEventOccurred = function (eventName) {
+    };
+    ActiveState.prototype.onMove = function (oldX, oldY, newX, newY) {
+    };
+    ActiveState.prototype.onRelease = function (currentX, currentY) {
+        var screenHeight = this.configurationManager.getScreenHeight();
+        if (currentY < screenHeight - 50)
+            this.actionManager.move(0, screenHeight, 0);
+    };
+    ActiveState.prototype.onPick = function (currentX, currentY) {
+    };
+    ActiveState.prototype.onMenuItemSelected = function (itemName) {
+    };
+    ActiveState.prototype.onResponseReceived = function (response) {
+    };
+    ActiveState.prototype.onLocationReceived = function (location) {
+    };
+    ActiveState.prototype.onUserActivityStateReceived = function (state) {
+    };
+    ActiveState.prototype.onHeadphoneStateReceived = function (state) {
+    };
+    ActiveState.prototype.onWeatherReceived = function (weather) {
+    };
+    ActiveState.prototype.onConfigureMenuItems = function (menuBuilder) { };
+    ActiveState.prototype.onSpeechRecognitionResults = function (results) { };
+    ActiveState.prototype.onPlacesReceived = function (places) { };
+    return ActiveState;
+}(PirateState));
+//# sourceMappingURL=PirateState.js.map

@@ -121,7 +121,6 @@ enum PassiveSubstate {
     AskingForInteraction,
     WalkingAround
 }
-
 class PassiveState extends PirateState {
     static get LOOKING_AROUND_CHANGE(): number { return 0.1; };
     static get CHANGE_PASSIVE_STATE(): number { return 0.25; };
@@ -134,6 +133,8 @@ class PassiveState extends PirateState {
     private lastPlayGameClick: number;
     private miniGame: MiniGame;
     private currentState: PassiveSubstate;
+
+    private noPlayPenaltyTime: number;
 
     constructor(switchContext: IStateSwitchable) {
         super(switchContext);
@@ -370,7 +371,7 @@ class PassiveState extends PirateState {
                     if (now - this.lastPlayGameClick < 2000)
                         return;
                     this.lastPlayGameClick = now;
-                    this.playRandomMiniGame();
+                    this.playRandomMiniGame(now);
                 }
                 break;
 
@@ -409,36 +410,57 @@ class PassiveState extends PirateState {
 
     onPlacesReceived(places: IAlivePlaceLikelihood[]): void { }
 
-    playRandomMiniGame(): void {
+    playRandomMiniGame(currentTime: number): void {
         if (this.playingMiniGame) return;
+
+        if (currentTime < this.noPlayPenaltyTime) {
+            this.actionManager.showMessage("I said that i don't want to play right now!!", "#4C4D4F", "#ffffff", 2000);
+           // this.noPlayPenaltyTime = currentTime + 10000;
+            return;
+        }
 
         if (this.shouldEventHappen(0.6)) {
             this.actionManager.showMessage("I don't want to play right now..", "#4C4D4F", "#ffffff", 2000);
+           // this.noPlayPenaltyTime = currentTime + 10000;
             return;
         }
 
         this.menuManager.setProperty("playButton", "Text", "Surrender");
         this.playingMiniGame = true;
-        this.miniGame = new HideAndSeekMiniGame(this.managersHandler,
-            (playerWon: boolean) => {
-                this.actionManager.move(-Number.MAX_VALUE, this.configurationManager.getScreenHeight(), 20);
-                this.actionManager.animateAlpha(1, 200);
-                this.playingMiniGame = false;
+        let randomNumber = Math.random();
 
-                if (playerWon) {
-                    this.actionManager.draw("pirate__laughing.png", this.configurationManager.getMaximalResizeRatio(), false);
-                    this.actionManager.showMessage("Great job! you won! i'll get you next time! :D", "#91CA63", "#ffffff", 5000);
-                }
-                else {
-                    this.actionManager.draw("laughing-ha.png", this.configurationManager.getMaximalResizeRatio(), false);
-                    this.actionManager.showMessage("Haha, i won! are you ready to lose again? :D", "#EC2027", "#ffffff", 5000);
-                }
-
-                this.menuManager.setProperty("playButton", "Text", "Let's play!");
-                this.menuManager.setProperty("progress", "progress", "0");
-            });
+        if (randomNumber > 50) {
+            this.miniGame = new HideAndSeekMiniGame(this.managersHandler,
+                (playerWon: boolean) => {
+                    this.actionManager.animateAlpha(1, 200);
+                    this.miniGameOver(playerWon);
+                });
+        }
+        else {
+            this.miniGame = new ReflexMiniGame(this.managersHandler,
+                (playerWon: boolean) => {
+                    this.miniGameOver(playerWon);
+                });
+        }
 
         this.miniGame.onStart(this.configurationManager.getCurrentTime().currentTimeMillis);
+    }
+
+    private miniGameOver(playerWon: boolean): void {
+        this.actionManager.move(-this.configurationManager.getScreenWidth(), this.configurationManager.getScreenHeight(), 20);
+        this.playingMiniGame = false;
+
+        if (playerWon) {
+            this.actionManager.draw("pirate__laughing.png", this.configurationManager.getMaximalResizeRatio(), false);
+            this.actionManager.showMessage("Great job! you won! i'll get you next time! :D", "#91CA63", "#ffffff", 5000);
+        }
+        else {
+            this.actionManager.draw("laughing-ha.png", this.configurationManager.getMaximalResizeRatio(), false);
+            this.actionManager.showMessage("Haha, i won! are you ready to lose again? :D", "#EC2027", "#ffffff", 5000);
+        }
+
+        this.menuManager.setProperty("playButton", "Text", "Let's play!");
+        this.menuManager.setProperty("progress", "progress", "0");
     }
 }
 
@@ -447,7 +469,6 @@ enum SleepingSubstate {
     Nap,
     Angry
 }
-
 class SleepingState extends PirateState {
     static get ANNOYED_TO_NORMAL_TIME(): number { return 5000 }
     static get SNORE_TO_NORMAL_TIME(): number { return 5000 }
@@ -571,7 +592,7 @@ class SleepingState extends PirateState {
     }
 
     onMenuItemSelected(itemName: string): void {
-
+        this.actionManager.showMessage("Zzz Zzz Zzzzzzz", "#000000", "#ffffff", 2000);
     }
 
     onResponseReceived(response: string): void {
@@ -610,7 +631,6 @@ class SleepingState extends PirateState {
 enum ActiveSubstate {
     Fun
 }
-
 class ActiveState extends PirateState {
 
     private currentState: ActiveSubstate;

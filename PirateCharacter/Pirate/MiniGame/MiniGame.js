@@ -45,6 +45,11 @@ var HideAndSeekMiniGame = (function (_super) {
         //the game will start after 10 seconds.
         this.gameStartTime = this.startTime + 10000;
     };
+    /**
+     * This method gets called every 250 milliseconds by the system, any logic updates to the state of your character should occur here.
+     * Note: onTick only gets called when the screen is ON.
+     * @param currentTime The current time (in milliseconds) on the device.
+     */
     HideAndSeekMiniGame.prototype.onTick = function (currentTime) {
         if (currentTime > this.gameStartTime) {
             this.actionManager.animateAlpha(0, 50);
@@ -61,7 +66,7 @@ var HideAndSeekMiniGame = (function (_super) {
     };
     HideAndSeekMiniGame.prototype.updateProgress = function (currentTime) {
         var ongoingTime = currentTime - this.gameStartTime;
-        var remainingTime = 60 - ongoingTime / 1000;
+        var remainingTime = this.gameTime - ongoingTime / 1000;
         if (remainingTime < 20)
             this.menuManager.setProperty("progress", "frontcolor", "#EC2027");
         else if (remainingTime < 40)
@@ -97,5 +102,124 @@ var HideAndSeekMiniGame = (function (_super) {
         }
     };
     return HideAndSeekMiniGame;
+}(MiniGame));
+var ReflexMiniGame = (function (_super) {
+    __extends(ReflexMiniGame, _super);
+    function ReflexMiniGame(handler, finishCallback) {
+        var _this = _super.call(this) || this;
+        _this.menuManager = handler.getMenuManager();
+        _this.actionManager = handler.getActionManager();
+        _this.characterManager = handler.getCharacterManager();
+        _this.configurationManager = handler.getConfigurationManager();
+        _this.finishCallback = finishCallback;
+        return _this;
+    }
+    /**
+     * This method gets called once when the user clicks on the 'Lets play' button in the Menu.
+     * We use this method to initiate the game and display an explanation about it, so the user will know what to do.
+     * @param currentTime The current system time.
+     */
+    ReflexMiniGame.prototype.onStart = function (currentTime) {
+        this.lastDecreaseTime = currentTime;
+        this.touches = 1;
+        this.progress = 50;
+        this.dancingTime = 0;
+        this.currentDrawable = "breathing.png";
+        this.difficulty = Math.random() * 100;
+        var difficultyTrimmed = this.difficulty.toString().substring(0, 4);
+        this.actionManager.draw("laughing-ha.png", this.configurationManager.getMaximalResizeRatio(), false);
+        //Displaying an explainer message for 10 seconds.
+        this.actionManager.showMessage("This is a reflex game! i will walk around the screen, and you will need to touch me ,but ONLY while i DANCE! :D "
+            + "\nOnce the progress bar in the menu will reach 100%, you will win! but if it reaches 0%... i will win! :D"
+            + "\nThe phone will vibrate everytime you do it incorrectly"
+            + "\nDifficulty: " + difficultyTrimmed, "#6599FF", "#ffffff", 10000);
+        this.menuManager.setProperty("progress", "maxprogress", "100");
+        this.menuManager.setProperty("progress", "progress", this.progress.toString());
+        this.startTime = currentTime;
+        //the game will start after 10 seconds.
+        this.gameStartTime = this.startTime + 10000;
+    };
+    /**
+     * This method gets called every 250 milliseconds by the system, any logic updates to the state of your character should occur here.
+     * Note: onTick only gets called when the screen is ON.
+     * @param currentTime The current time (in milliseconds) on the device.
+     */
+    ReflexMiniGame.prototype.onTick = function (currentTime) {
+        if (currentTime > this.gameStartTime) {
+            this.updateProgress(currentTime);
+            this.moveToRandomLocation(currentTime);
+            this.maybeDance(currentTime);
+            this.drawCurrentState();
+        }
+        else {
+            this.lastDecreaseTime = currentTime;
+            this.touches = 1;
+        }
+    };
+    ReflexMiniGame.prototype.updateProgress = function (currentTime) {
+        var ongoingTime = currentTime - this.lastDecreaseTime;
+        if (ongoingTime > 1000) {
+            this.progress = this.progress - 1 - this.difficulty / 100;
+            this.lastDecreaseTime = currentTime;
+        }
+        if (this.progress <= 0) {
+            this.finishCallback(false);
+        }
+        if (this.progress < 20)
+            this.menuManager.setProperty("progress", "frontcolor", "#EC2027");
+        else if (this.progress < 60)
+            this.menuManager.setProperty("progress", "frontcolor", "#E59400");
+        this.menuManager.setProperty("progress", "Progress", this.progress.toString());
+    };
+    ReflexMiniGame.prototype.moveToRandomLocation = function (currentTime) {
+        var randomMove = Math.floor(Math.random() * this.difficulty * 50) - Math.floor(Math.random() * this.difficulty * 50); //move the x,y in a number between(-difficulty * 50, +difficulty * 50)
+        this.actionManager.move(randomMove, randomMove, 250);
+    };
+    ReflexMiniGame.prototype.maybeDance = function (currentTime) {
+        if (currentTime > this.dancingTime) {
+            this.currentDrawable = "breathing.png";
+        }
+        var danceChance = (100 - this.progress) / 100;
+        if (danceChance < 0.15)
+            danceChance = 0.15;
+        if (Math.random() < danceChance) {
+            this.dancingTime = currentTime + danceChance * 2000;
+            this.currentDrawable = "pirate-dancing.png";
+        }
+    };
+    ReflexMiniGame.prototype.drawCurrentState = function () {
+        this.actionManager.draw(this.currentDrawable, this.configurationManager.getMaximalResizeRatio(), false);
+    };
+    ReflexMiniGame.prototype.onEventOccured = function (eventName) {
+        var now = this.configurationManager.getCurrentTime().currentTimeMillis;
+        switch (eventName) {
+            case "touch":
+                this.handleTouch(now);
+                break;
+            case "stop":
+                if (now - this.gameStartTime > 0)
+                    this.finishCallback(false);
+                break;
+        }
+    };
+    ReflexMiniGame.prototype.handleTouch = function (currentTime) {
+        if (currentTime > this.dancingTime) {
+            this.progress -= this.touches;
+            this.actionManager.vibrate(250);
+            this.touches--;
+            this.actionManager.showSystemMessage("BAD " + this.progress.toString());
+        }
+        else {
+            this.touches++;
+            this.actionManager.showSystemMessage("Good :" + this.progress.toString());
+            this.progress += this.touches;
+        }
+        if (this.progress <= 0)
+            this.finishCallback(false);
+        else if (this.progress >= 100)
+            this.finishCallback(true);
+        this.currentDrawable = "breathing.png";
+    };
+    return ReflexMiniGame;
 }(MiniGame));
 //# sourceMappingURL=MiniGame.js.map

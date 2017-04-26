@@ -74,7 +74,7 @@
     <TypeScriptCompile Include="AliveInterfaces\ITextToSpeechManager.ts" />
     <TypeScriptCompile Include="app.ts" />
     <TypeScriptCompile Include="Pirate\MiniGame\MiniGame.ts" />
-    <TypeScriptCompile Include="Pirate\PirateState.ts" />
+    <TypeScriptCompile Include="Pirate\PirateStates\PirateState.ts" />
     <TypeScriptCompile Include="Pirate\IStateSwitchable.ts" />
     <TypeScriptCompile Include="Pirate\TimerTriggerSystem.ts" />
     <TypeScriptCompile Include="Pirate\WordsEvaluator.ts" />

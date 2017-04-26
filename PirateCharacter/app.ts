@@ -204,7 +204,7 @@ class AliveClass implements IAliveAgent, IStateSwitchable {
         progressLabel.Width = 2;
         progressLabel.Height = 1;
         progressLabel.Name = "progressLabel";
-        progressLabel.Text = "Remaining time:";
+        progressLabel.Text = "Game time:";
 
         let progress = new ProgressBarMenuItem();
         progress.InitialX = 2;

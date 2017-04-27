@@ -2,7 +2,7 @@
 
     private dict: collections.Dictionary<string, number>;
 
-    private currentTime;
+    private currentTime:()=>number;
     constructor(currentTimeCallback: () => number) {
         this.currentTime = currentTimeCallback;
         this.dict = new collections.Dictionary<string, number>();

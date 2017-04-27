@@ -13,7 +13,7 @@
      * This method will show a system toast message.
      * @param message The message to display.
      */
-    showSystemMessage(message: string);
+    showSystemMessage(message: string):void;
 
     /**
      * This method will play a sound.

@@ -1,6 +1,6 @@
 ﻿interface IAliveAgent {
     onTick(currentTime: number): void;
-    onBackgroundTick(currentTime: number);
+    onBackgroundTick(currentTime: number):void;
     onStart(handler: IManagersHandler, disabledPermissions: string[]): void;
     onPhoneEventOccurred(eventName: string, jsonedData: string): void;
     onMove(oldX: number, oldY: number, newX: number, newY: number): void;

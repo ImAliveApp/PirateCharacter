@@ -1,4 +1,5 @@
 ﻿/// <reference path="Scripts/collections.ts" />
+
 class AliveClass implements IAliveAgent, IStateSwitchable {
     private states: collections.Dictionary<string, PirateState>;
     private handler: IManagersHandler;

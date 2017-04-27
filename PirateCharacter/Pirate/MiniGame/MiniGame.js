@@ -207,11 +207,9 @@ var ReflexMiniGame = (function (_super) {
             this.progress -= this.touches;
             this.actionManager.vibrate(250);
             this.touches--;
-            this.actionManager.showSystemMessage("BAD " + this.progress.toString());
         }
         else {
             this.touches++;
-            this.actionManager.showSystemMessage("Good :" + this.progress.toString());
             this.progress += this.touches;
         }
         if (this.progress <= 0)

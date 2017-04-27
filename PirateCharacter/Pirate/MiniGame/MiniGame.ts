@@ -270,11 +270,9 @@ class ReflexMiniGame extends MiniGame {
             this.progress -= this.touches;
             this.actionManager.vibrate(250);
             this.touches--;
-            this.actionManager.showSystemMessage("BAD " + this.progress.toString());
         }
         else {
             this.touches++;
-            this.actionManager.showSystemMessage("Good :" + this.progress.toString());
             this.progress += this.touches;
         }
 

@@ -4,13 +4,14 @@
     static get PASSIVE(): string { return "passive"; };
     static get ACTIVE(): string { return "active"; };
 
-    protected managersHandler: IManagersHandler;
-    protected speechToTextManager: ISpeechToTextManager;
-    protected actionManager: IActionManager;
-    protected resourceManager: IResourceManager;
-    protected characterManager: ICharacterManager;
+    
     protected configurationManager: IConfigurationManager;
-    protected menuManager: IMenuManager;
+    protected speechToTextManager: ISpeechToTextManager;
+    protected characterManager: ICharacterManager;
+    protected resourceManager: IResourceManager;
+    protected managersHandler: IManagersHandler;
+    protected actionManager: IActionManager;
+    protected menuManager: IMenuManager;    
 
     protected wordsEvaluator: WordsEvaluator;
 
@@ -41,8 +42,8 @@
         this.actionManager = handler.getActionManager();
         this.resourceManager = handler.getResourceManager();
         this.characterManager = handler.getCharacterManager();
-        this.configurationManager = handler.getConfigurationManager();
         this.speechToTextManager = handler.getSpeechToTextManager();
+        this.configurationManager = handler.getConfigurationManager();
         this.resourceManagerHelper = new ResourceManagerHelper(this.resourceManager);
         this.timerTrigger = new TimerTriggerSystem(() => this.configurationManager.getCurrentTime().currentTimeMillis);
     }
@@ -133,6 +134,7 @@ class PassiveState extends PirateState {
 
     private playerLoseMessages: string[];
     private playerWinMessages: string[];
+    private cryingMessages: string[];
 
     private lastPlayGameClick: number;
     private miniGame: MiniGame;
@@ -159,6 +161,9 @@ class PassiveState extends PirateState {
 
         this.playerLoseMessages = ["Ahahaha, i won!", "You really thought you could win? ehehehe", "Phew, it was close! keep on training!",
             "That was fun! because i won :D", "You really expected a different outcome??"];
+
+        this.cryingMessages = ["Why are you calling me by names? :(", "Why are you so mean? :'(", "Please stop saying that :(",
+            "Stop it! please!", ":'("];
     }
 
     onTick(time: number): void {
@@ -202,6 +207,7 @@ class PassiveState extends PirateState {
     }
 
     lookingAroundTick(time: number): void {
+        this.actionManager.stopSound();
         if (this.shouldEventHappen(PassiveState.LOOKING_AROUND_CHANGE)) {
             if (this.shouldEventHappen(PassiveState.CHANGE_PASSIVE_STATE)) {
                 this.actionManager.stopSound();
@@ -418,8 +424,14 @@ class PassiveState extends PirateState {
     onConfigureMenuItems(menuBuilder: IMenuBuilder) { }
 
     onSpeechRecognitionResults(results: string): void {
-        if (this.wordsEvaluator.containsBadWord(results) && !this.playingMiniGame) {
+        if (this.playingMiniGame) return;
+        results = results.toLocaleLowerCase();
+        let speechResults = "speech results";
+        let realResults = results.substring(results.indexOf(speechResults) + speechResults.length); 
+
+        if (this.wordsEvaluator.containsBadWord(results)) {
             this.actionManager.stopSound();
+            this.actionManager.showMessage(this.cryingMessages[Math.floor(Math.random() * 4)], "#000000", "#aaaaaa", 2000);
             this.currentState = PassiveSubstate.AskingForInteraction;
             this.timerTrigger.set("askingForInteraction", PassiveState.ASKING_FOR_INTERACTION_TIME);
         }

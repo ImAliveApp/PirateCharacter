@@ -4,7 +4,7 @@ var AliveClass = (function () {
     }
     AliveClass.prototype.onStart = function (handler, disabledPermissions) {
         this.handler = handler;
-        this.handler.getActionManager().move(0, this.handler.getConfigurationManager().getScreenHeight(), 200);
+        this.handler.getActionManager().move(0, this.handler.getConfigurationManager().getScreenHeight(), 0);
         this.handler.getActionManager().draw("activate.png", this.handler.getConfigurationManager().getMaximalResizeRatio(), false);
         this.initializeStates(handler);
     };

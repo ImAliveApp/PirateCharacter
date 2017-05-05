@@ -123,7 +123,8 @@ enum PassiveSubstate {
 }
 class PassiveState extends PirateState {
     static get LOOKING_AROUND_CHANGE(): number { return 0.1; };
-    static get CHANGE_PASSIVE_STATE(): number { return 0.25; };
+    static get CHANCE_SWITCH_TO_FUN(): number { return 0.2; };
+    static get CHANGE_PASSIVE_STATE(): number { return 0.2; };
     static get EATING_TIME(): number { return 10000; };
     static get READING_TIME(): number { return 20000; };
     static get HAVING_FUN_TIME(): number { return 20000; };
@@ -226,6 +227,9 @@ class PassiveState extends PirateState {
                 this.actionManager.stopSound();
                 this.currentState = PassiveSubstate.AskingForInteraction;
                 this.timerTrigger.set("askingForInteraction", PassiveState.ASKING_FOR_INTERACTION_TIME);
+            }
+            else if (this.shouldEventHappen(PassiveState.CHANCE_SWITCH_TO_FUN)) {
+                this.switchToFunState();
             }
             else {
                 this.actionManager.stopSound();
@@ -336,10 +340,14 @@ class PassiveState extends PirateState {
         if (eventName == AgentConstants.NEW_OUTGOING_CALL ||
             eventName == AgentConstants.INCOMING_CALL ||
             eventName == AgentConstants.SMS_RECEIVED) {
-            this.timerTrigger.set("fun", PassiveState.HAVING_FUN_TIME);
-            this.actionManager.stopSound();
-            this.switchContext.switchTo(PirateState.ACTIVE);
+            this.switchToFunState();
         }
+    }
+
+    switchToFunState(): void {
+        this.timerTrigger.set("fun", PassiveState.HAVING_FUN_TIME);
+        this.actionManager.stopSound();
+        this.switchContext.switchTo(PirateState.ACTIVE);
     }
 
     onMove(oldX: number, oldY: number, newX: number, newY: number): void {

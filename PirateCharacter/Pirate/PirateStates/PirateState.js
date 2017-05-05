@@ -106,8 +106,14 @@ var PassiveState = (function (_super) {
         configurable: true
     });
     ;
+    Object.defineProperty(PassiveState, "CHANCE_SWITCH_TO_FUN", {
+        get: function () { return 0.2; },
+        enumerable: true,
+        configurable: true
+    });
+    ;
     Object.defineProperty(PassiveState, "CHANGE_PASSIVE_STATE", {
-        get: function () { return 0.25; },
+        get: function () { return 0.2; },
         enumerable: true,
         configurable: true
     });
@@ -212,6 +218,9 @@ var PassiveState = (function (_super) {
                 this.currentState = PassiveSubstate.AskingForInteraction;
                 this.timerTrigger.set("askingForInteraction", PassiveState.ASKING_FOR_INTERACTION_TIME);
             }
+            else if (this.shouldEventHappen(PassiveState.CHANCE_SWITCH_TO_FUN)) {
+                this.switchToFunState();
+            }
             else {
                 this.actionManager.stopSound();
                 this.walkRandomally();
@@ -305,10 +314,13 @@ var PassiveState = (function (_super) {
         if (eventName == AgentConstants.NEW_OUTGOING_CALL ||
             eventName == AgentConstants.INCOMING_CALL ||
             eventName == AgentConstants.SMS_RECEIVED) {
-            this.timerTrigger.set("fun", PassiveState.HAVING_FUN_TIME);
-            this.actionManager.stopSound();
-            this.switchContext.switchTo(PirateState.ACTIVE);
+            this.switchToFunState();
         }
+    };
+    PassiveState.prototype.switchToFunState = function () {
+        this.timerTrigger.set("fun", PassiveState.HAVING_FUN_TIME);
+        this.actionManager.stopSound();
+        this.switchContext.switchTo(PirateState.ACTIVE);
     };
     PassiveState.prototype.onMove = function (oldX, oldY, newX, newY) {
     };

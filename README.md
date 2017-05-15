@@ -36,7 +36,7 @@ The character menu work is done in the "onMenuItemSelected" method:
         this.states.getValue(this.currentState).onMenuItemSelected(viewName);
     }
 ```
-The mood-state machine is implemented at the [Pirate state](https://github.com/hay12396/PirateProject/blob/master/PirateProject/Pirate/PirateState.ts) file.
+The mood-state machine is implemented at the [Pirate state](https://github.com/ImAliveApp/PirateCharacter/blob/master/PirateCharacter/Pirate/PirateStates/PirateState.ts) file.
 
 Once an action occures, this method gets called with the actionName being the name of the action that occured, i.e in case
 of the device being plugged to a power supply, this method will be called with the actionName being "POWER_CONNECTED".

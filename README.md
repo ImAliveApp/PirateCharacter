@@ -1,16 +1,16 @@
 ## Pirate Character:
 
 ### Main concept:
-This is an actual code of a Pirate character in the app, this character responds to phone actions (events), displaying and using [character menu](https://github.com/hay12396/ImAliveGuide/wiki/The-Character-Menu) for the best user interaction and it has an implementation of a mood-state machine (the character will behave differently depending on various of variables)
+This is an actual code of a Pirate character in the app, this character responds to phone actions (events), displaying and using [character menu](https://github.com/ImAliveApp/ImAliveGuide/wiki/The-Character-Menu) for the best user interaction and it has an implementation of a mood-state machine (the character will behave differently depending on various of variables)
 
 ### How to use:
 In order to use this template, do the following steps:
 
-1. Download and build it this project ([guide](https://github.com/hay12396/ImAliveGuide/wiki/How-to:-Build-and-upload-a-character-code))
+1. Download the project.
 
-2. Upload your assets ([guide](https://youtu.be/UJ3AGZs-1-Y))
+2. Upload your assets ([guide](https://youtu.be/2eHSx10HHuc))
 
-3. Publish your character and see the results! ([guide](https://github.com/hay12396/ImAliveGuide/wiki/How-to:-Publish-your-character))
+3. Publish your character and see the results! ([guide](https://github.com/ImAliveApp/ImAliveGuide/wiki/How-to:-Publish-your-character))
 
 ### The code:
 Most of the action responds work is done in the "onPhoneEventOccurred" method:
@@ -36,7 +36,7 @@ The character menu work is done in the "onMenuItemSelected" method:
         this.states.getValue(this.currentState).onMenuItemSelected(viewName);
     }
 ```
-The mood-state machine is implemented at the [Pirate state](https://github.com/hay12396/PirateProject/blob/master/PirateProject/Pirate/PirateState.ts) file.
+The mood-state machine is implemented at the [Pirate state](https://github.com/ImAliveApp/PirateCharacter/blob/master/PirateCharacter/Pirate/PirateStates/PirateState.ts) file.
 
 Once an action occures, this method gets called with the actionName being the name of the action that occured, i.e in case
 of the device being plugged to a power supply, this method will be called with the actionName being "POWER_CONNECTED".
@@ -44,4 +44,4 @@ of the device being plugged to a power supply, this method will be called with t
 If you have upload resources to the website under the "POWER_CONNECTED" category, a random image and a random sound will be picked and used
 by the "drawAndPlayRandomResourceByCategory" method.
 
-**Note**: you must [register](http://linkToActionRegisterGuide.com) to a phone action in order to be notified when it occures.
+**Note**: you must [register](https://youtu.be/HGkpn2y04B8) to a phone action in order to be notified when it occures.

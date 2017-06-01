@@ -99,12 +99,13 @@
 
     drawAndPlayRandomResourceByCategory(category: string): void {
         if (this.playingMiniGame) return;
-
-        let resToDraw = this.resourceManagerHelper.chooseRandomImage(category);
-        if (resToDraw != this.categoryOnScreen)
+        
+        if (category != this.categoryOnScreen)
+        {
+            let resToDraw = this.resourceManagerHelper.chooseRandomImage(category);
             this.actionManager.draw(resToDraw, this.configurationManager.getMaximalResizeRatio(), false);
-
-        this.categoryOnScreen = category;
+            this.categoryOnScreen = category;
+        }
 
         let soundToPlay = this.resourceManagerHelper.chooseRandomSound(category);
         if (!this.configurationManager.isSoundPlaying())

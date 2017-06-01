@@ -72,10 +72,11 @@ var PirateState = (function () {
     PirateState.prototype.drawAndPlayRandomResourceByCategory = function (category) {
         if (this.playingMiniGame)
             return;
-        var resToDraw = this.resourceManagerHelper.chooseRandomImage(category);
-        if (resToDraw != this.categoryOnScreen)
+        if (category != this.categoryOnScreen) {
+            var resToDraw = this.resourceManagerHelper.chooseRandomImage(category);
             this.actionManager.draw(resToDraw, this.configurationManager.getMaximalResizeRatio(), false);
-        this.categoryOnScreen = category;
+            this.categoryOnScreen = category;
+        }
         var soundToPlay = this.resourceManagerHelper.chooseRandomSound(category);
         if (!this.configurationManager.isSoundPlaying())
             this.actionManager.playSound(soundToPlay, false);

@@ -440,6 +440,8 @@ var PassiveState = (function (_super) {
         this.menuManager.setProperty("progress", "maxprogress", "100");
         this.menuManager.setProperty("progress", "progress", "0");
     };
+    PassiveState.prototype.onUserEventOccurred = function (eventName, jsonedData) {
+    };
     return PassiveState;
 }(PirateState));
 var SleepingSubstate;
@@ -583,6 +585,8 @@ var SleepingState = (function (_super) {
         this.timerTrigger.set("angry", SleepingState.ANNOYED_TO_NORMAL_TIME);
     };
     SleepingState.prototype.onPlacesReceived = function (places) { };
+    SleepingState.prototype.onUserEventOccurred = function (eventName, jsonedData) {
+    };
     return SleepingState;
 }(PirateState));
 var ActiveSubstate;
@@ -647,6 +651,8 @@ var ActiveState = (function (_super) {
     ActiveState.prototype.onConfigureMenuItems = function (menuBuilder) { };
     ActiveState.prototype.onSpeechRecognitionResults = function (results) { };
     ActiveState.prototype.onPlacesReceived = function (places) { };
+    ActiveState.prototype.onUserEventOccurred = function (eventName, jsonedData) {
+    };
     return ActiveState;
 }(PirateState));
 //# sourceMappingURL=PirateState.js.map

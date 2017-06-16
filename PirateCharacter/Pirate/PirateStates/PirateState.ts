@@ -74,6 +74,8 @@
 
     abstract onPlacesReceived(places: IAlivePlaceLikelihood[]): void;
 
+    abstract onUserEventOccurred(eventName: string, jsonedData: string): void;
+
     abstract initializeState(): void;
 
     walkRandomally(): void {
@@ -501,6 +503,10 @@ class PassiveState extends PirateState {
         this.menuManager.setProperty("progress", "maxprogress", "100");
         this.menuManager.setProperty("progress", "progress", "0");
     }
+
+    onUserEventOccurred(eventName: string, jsonedData: string): void {
+     
+    }
 }
 
 enum SleepingSubstate {
@@ -665,6 +671,10 @@ class SleepingState extends PirateState {
     }
 
     onPlacesReceived(places: IAlivePlaceLikelihood[]): void { }
+
+    onUserEventOccurred(eventName: string, jsonedData: string): void {
+     
+    }
 }
 
 enum ActiveSubstate {
@@ -759,4 +769,8 @@ class ActiveState extends PirateState {
     onSpeechRecognitionResults(results: string): void { }
 
     onPlacesReceived(places: IAlivePlaceLikelihood[]): void { }
+
+    onUserEventOccurred(eventName: string, jsonedData: string): void {
+     
+    }
 }

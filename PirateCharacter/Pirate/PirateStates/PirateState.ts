@@ -52,8 +52,6 @@
 
     abstract onPhoneEventOccurred(eventName: string): void;
 
-    abstract onMove(oldX: number, oldY: number, newX: number, newY: number): void;
-
     abstract onRelease(currentX: number, currentY: number): void;
 
     abstract onPick(currentX: number, currentY: number): void;
@@ -359,10 +357,6 @@ class PassiveState extends PirateState {
         this.switchContext.switchTo(PirateState.ACTIVE);
     }
 
-    onMove(oldX: number, oldY: number, newX: number, newY: number): void {
-
-    }
-
     onRelease(currentX: number, currentY: number): void {
         let screenHeight = this.configurationManager.getScreenHeight();
 
@@ -620,10 +614,6 @@ class SleepingState extends PirateState {
         }
     }
 
-    onMove(oldX: number, oldY: number, newX: number, newY: number): void {
-
-    }
-
     onRelease(currentX: number, currentY: number): void {
         let screenHeight = this.configurationManager.getScreenHeight();
 
@@ -723,10 +713,6 @@ class ActiveState extends PirateState {
     }
 
     onPhoneEventOccurred(eventName: string): void {
-
-    }
-
-    onMove(oldX: number, oldY: number, newX: number, newY: number): void {
 
     }
 

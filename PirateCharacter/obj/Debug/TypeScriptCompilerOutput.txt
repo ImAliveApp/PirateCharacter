@@ -78,6 +78,8 @@ C:\Users\Hay Zohar\Documents\GitHub\PirateCharacter\PirateCharacter\AliveEnviron
 C:\Users\Hay Zohar\Documents\GitHub\PirateCharacter\PirateCharacter\AliveEnvironmentObjects\MenuInterfaces\IButtonMenuItem.js.map
 C:\Users\Hay Zohar\Documents\GitHub\PirateCharacter\PirateCharacter\AliveEnvironmentObjects\MenuInterfaces\ICheckBoxMenuItem.js
 C:\Users\Hay Zohar\Documents\GitHub\PirateCharacter\PirateCharacter\AliveEnvironmentObjects\MenuInterfaces\ICheckBoxMenuItem.js.map
+C:\Users\Hay Zohar\Documents\GitHub\PirateCharacter\PirateCharacter\AliveEnvironmentObjects\MenuInterfaces\IHyperLinkMenuItem.js
+C:\Users\Hay Zohar\Documents\GitHub\PirateCharacter\PirateCharacter\AliveEnvironmentObjects\MenuInterfaces\IHyperLinkMenuItem.js.map
 C:\Users\Hay Zohar\Documents\GitHub\PirateCharacter\PirateCharacter\AliveEnvironmentObjects\MenuInterfaces\IMenuHeader.js
 C:\Users\Hay Zohar\Documents\GitHub\PirateCharacter\PirateCharacter\AliveEnvironmentObjects\MenuInterfaces\IMenuHeader.js.map
 C:\Users\Hay Zohar\Documents\GitHub\PirateCharacter\PirateCharacter\AliveEnvironmentObjects\MenuInterfaces\IPaintMenuItem.js
@@ -86,6 +88,8 @@ C:\Users\Hay Zohar\Documents\GitHub\PirateCharacter\PirateCharacter\AliveEnviron
 C:\Users\Hay Zohar\Documents\GitHub\PirateCharacter\PirateCharacter\AliveEnvironmentObjects\MenuInterfaces\IPictureMenuItem.js.map
 C:\Users\Hay Zohar\Documents\GitHub\PirateCharacter\PirateCharacter\AliveEnvironmentObjects\MenuInterfaces\IProgressBarMenuItem.js
 C:\Users\Hay Zohar\Documents\GitHub\PirateCharacter\PirateCharacter\AliveEnvironmentObjects\MenuInterfaces\IProgressBarMenuItem.js.map
+C:\Users\Hay Zohar\Documents\GitHub\PirateCharacter\PirateCharacter\AliveEnvironmentObjects\MenuInterfaces\ISwitchMenuItem.js
+C:\Users\Hay Zohar\Documents\GitHub\PirateCharacter\PirateCharacter\AliveEnvironmentObjects\MenuInterfaces\ISwitchMenuItem.js.map
 C:\Users\Hay Zohar\Documents\GitHub\PirateCharacter\PirateCharacter\AliveEnvironmentObjects\MenuInterfaces\ITextBoxMenuItem.js
 C:\Users\Hay Zohar\Documents\GitHub\PirateCharacter\PirateCharacter\AliveEnvironmentObjects\MenuInterfaces\ITextBoxMenuItem.js.map
 C:\Users\Hay Zohar\Documents\GitHub\PirateCharacter\PirateCharacter\AliveEnvironmentObjects\MenuClasses\BaseMenuItem.js
